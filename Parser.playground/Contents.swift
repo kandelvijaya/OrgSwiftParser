@@ -3,34 +3,6 @@ import Foundation
 // Not using typealias as it cannot be extended
 // typealias Parser<T> = (String) -> (T, String)
 
-
-enum Result<T> {
-    case success(T)
-    case failure(String)
-    
-    func map<U>(_ transform: (T) -> U) -> Result<U> {
-        switch self {
-        case let .success(v):
-            return .success(transform(v))
-        case let .failure(e):
-            return .failure(e)
-        }
-    }
-    
-    func flatMap<U>(_ transform: (T) -> Result<U>) -> Result<U> {
-        return Result.joined(map(transform))
-    }
-    
-    static func joined<A>(_ input: Result<Result<A>>) -> Result<A> {
-        switch input {
-        case let .success(v):
-            return v
-        case let .failure(e):
-            return .failure(e)
-        }
-    }
-}
-
 // Q: Is it better to model parser with 2 generic types: Input, Output
 struct Parser<Output> {
     typealias Stream = String
@@ -80,6 +52,10 @@ extension Parser {
                 return .failure(e)
             }
         }
+    }
+    
+    static func and<T,U>(_ first: Parser<T>, _ second: Parser<U>) -> Parser<(T,U)> {
+        return first.andThen(second)
     }
     
     /// Parses the input with the first parser, if that succeeds
@@ -150,13 +126,12 @@ extension Array {
     
     /// Reduces the collection from left to right similar to reduce
     /// However, supplies the first argument as the initial result
-    /// Useful, when either the Element doesnot have identity
-    /// Or you want simpler construct
+    /// Useful, when either the Element doesnot have identity AKA is not a monoid.
     /// [1,2,3].foldl(by: +) rather than [1,2,3].reduce(0, +)
     ///
     /// - Parameter by: A function which will be supplied with result and next item
     /// - Returns: Accumulated result value OR Optional when the list is empty.
-    func foldl(by: (Element, Element) -> Element) -> Element? {
+    func foldl1(by: (Element, Element) -> Element) -> Element? {
         guard let first = self.first else {
             assertionFailure("foldl with empty list is programming error")
             return nil
@@ -169,11 +144,41 @@ extension Array {
 
 }
 
-func sequence<T>(_ input: [Parser<T>]) -> Parser<[T]> {
-    
-    func join<T>(_ item1: Parser<T>, _ item2: Parser<T>) -> Parser<[T]> {
+
+/// Given a list of same typed parsers, reduce them into single parser
+/// In the process, we will sequence the parsed output
+///
+/// - Parameter parsers: [Parser<T>]
+/// - Returns: Parser<[T]>
+
+func sequenceOutput<T>(_ parsers: [Parser<T>]) -> Parser<[T]> {
+    let (x, y, xs) = (parsers.first, parsers.dropFirst().first, parsers.dropFirst().dropFirst())
+    switch (x, y, xs) {
+    case (nil, nil, _):
         return Parser<[T]> { input in
-            let firstRun = item1.run(input)
+            let output = ([T](), input)
+            return .success(output)
+        }
+    case let (v1?, nil, _):
+        return v1.map{ [$0] }
+    case let (v1?, v2?, nil):
+        return v1.combine(v2)
+    case let (v1?, v2?, others):
+        let first = v1.combine(v2)
+        let second = sequenceOutput(Array(others))
+        return first.andThen(second).map { $0.0 + $0.1 }
+    default:
+        assertionFailure("This shouldn't happen with collection type")
+        return Parser<[T]> {_ in .failure("Malformed collection error") }
+    }
+}
+
+
+// Temp code
+extension Parser {
+    func combine(_ item2: Parser) -> Parser<[Output]> {
+        return Parser<[Output]> { input in
+            let firstRun = self.run(input)
             switch firstRun {
             case let .success(v):
                 let secondRun = item2.run(v.1)
@@ -189,33 +194,14 @@ func sequence<T>(_ input: [Parser<T>]) -> Parser<[T]> {
             }
         }
     }
-    
-    func add<T>(_ list: Parser<[T]>, _ item2: Parser<T>) -> Parser<[T]> {
-        return Parser<[T]> { input in
-            let firstRun = list.run(input)
-            switch firstRun {
-            case let .failure(e):
-                return .failure(e)
-            case let .success(v1):
-                let secondRun = item2.run(v1.1)
-                switch secondRun {
-                case let .failure(e):
-                    return .failure(e)
-                case let .success(v2):
-                    let outArr = v1.0 + [v2.0]
-                    let returnValue = (outArr, v2.1)
-                    return .success(returnValue)
-                }
-            }
-        }
-    }
 }
+
 
 
 /// Test site
 let aChar = character { $0 == Character("a") }
-aChar.run("allo")
-aChar.run("ball")
+//aChar.run("allo")
+//aChar.run("ball")
 
 let bChar = character { $0 == Character("b") }
 let lChar = character { $0 == Character("l") }
@@ -224,11 +210,11 @@ let aballaChar = aChar.andThen(bChar).andThen(aChar).andThen(lChar).andThen(lCha
 aballaChar.run("aballa")
 aballaChar.run("vijaya")
 
-let aballaCharArr = [aChar, bChar, lChar, lChar, aChar]
+let aballaCharArr = [aChar, bChar, aChar ,lChar, lChar, aChar]
 
 let intParser = "1234567890".map { int in  character{ $0 == int  } }
 
-let intParserSequenced = intParser.foldl(by: Parser.orElse)
+let intParserSequenced = intParser.foldl1(by: Parser.orElse)
 let intP = intParserSequenced.flatMap{ par in par.map{ Int(String($0)) } }
 intParserSequenced?.run("123")
 
@@ -240,3 +226,10 @@ let aOrb = aChar.orElse(bChar)
 aOrb.run("a cat")
 aOrb.run("ball")
 aOrb.run("vall")
+
+aballaCharArr
+sequenceOutput(aballaCharArr).run("aballa")
+// aballaChar.run("aballa")
+sequenceOutput([Parser<Character>]()).run("aballa")
+
+
