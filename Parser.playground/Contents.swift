@@ -147,6 +147,15 @@ func character(_ satisfy: @escaping (Character) -> Bool) -> Parser<Character> {
 
 extension Array {
     
+    
+    /// Reduces the collection from left to right similar to reduce
+    /// However, supplies the first argument as the initial result
+    /// Useful, when either the Element doesnot have identity
+    /// Or you want simpler construct
+    /// [1,2,3].foldl(by: +) rather than [1,2,3].reduce(0, +)
+    ///
+    /// - Parameter by: A function which will be supplied with result and next item
+    /// - Returns: Accumulated result value OR Optional when the list is empty.
     func foldl(by: (Element, Element) -> Element) -> Element? {
         guard let first = self.first else {
             assertionFailure("foldl with empty list is programming error")
@@ -158,6 +167,48 @@ extension Array {
         }
     }
 
+}
+
+func sequence<T>(_ input: [Parser<T>]) -> Parser<[T]> {
+    
+    func join<T>(_ item1: Parser<T>, _ item2: Parser<T>) -> Parser<[T]> {
+        return Parser<[T]> { input in
+            let firstRun = item1.run(input)
+            switch firstRun {
+            case let .success(v):
+                let secondRun = item2.run(v.1)
+                switch secondRun {
+                case let .success(v2):
+                    let returnV = ([v.0, v2.0], v2.1)
+                    return .success(returnV)
+                case let .failure(e):
+                    return .failure(e)
+                }
+            case let .failure(e):
+                return .failure(e)
+            }
+        }
+    }
+    
+    func add<T>(_ list: Parser<[T]>, _ item2: Parser<T>) -> Parser<[T]> {
+        return Parser<[T]> { input in
+            let firstRun = list.run(input)
+            switch firstRun {
+            case let .failure(e):
+                return .failure(e)
+            case let .success(v1):
+                let secondRun = item2.run(v1.1)
+                switch secondRun {
+                case let .failure(e):
+                    return .failure(e)
+                case let .success(v2):
+                    let outArr = v1.0 + [v2.0]
+                    let returnValue = (outArr, v2.1)
+                    return .success(returnValue)
+                }
+            }
+        }
+    }
 }
 
 
