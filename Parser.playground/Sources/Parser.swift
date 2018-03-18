@@ -10,6 +10,10 @@ public struct Parser<Output> {
     public typealias ParsedOutput = Result<(Output, RemainingStream)>
     
     public let parse: (Stream) -> ParsedOutput
+    
+    public init(parse: @escaping (Stream) -> ParsedOutput) {
+        self.parse = parse
+    }
 }
 
 
@@ -113,6 +117,19 @@ extension Parser {
                 let innerRun = value.0.run(value.1)
                 return innerRun
             }
+        }
+    }
+    
+    
+    /// Lifting function. Also known as return or pure in
+    /// functional programming languages
+    ///
+    /// - Parameter output: T
+    /// - Returns: Parser<T> where output is prefilled
+    public static func lift<T>(_ output: T) -> Parser<T> {
+        return Parser<T> { input in
+            let out = (output, input)
+            return .success(out)
         }
     }
     
@@ -245,6 +262,105 @@ public func sequenceOutput<T>(_ parsers: [Parser<T>]) -> Parser<[T]> {
     let firstMapped: Parser<[T]> = first.map { [$0] }
     let andThenned = firstMapped.andThen(others)
     return andThenned.map { $0.0 + $0.1 }
+}
+
+
+
+/// Applicative apply. Applies the function stuck in wrapped parser to the
+/// parser with concrete value.
+///
+/// - Parameters:
+///   - wrapped: Parser<(T->U)>
+///   - parser: Parser<T>
+/// - Returns: Parser<U>
+public func applic<T,U>(_ wrapped: Parser<((T) -> U)>, to parser: Parser<T>) -> Parser<U> {
+    return wrapped.flatMap{ parser.map($0) }
+}
+
+
+/// Find the parser that works from the list
+///
+/// - Parameter parsers: [Parser<T>]
+/// - Returns: Parser<T>
+public func choice<T>(_ parsers: [Parser<T>]) -> Parser<T> {
+    return parsers.foldl1(by: <|>)!
+}
+
+
+/// Gets a parser that matches any of the character in the string.
+///
+/// - Parameter string: String
+/// - Returns: Parser<Character>
+public func anyOfChar(_ string: String) -> Parser<Character> {
+    return string.map(pchar) |> choice
+}
+
+
+/// Matches using the parses as many times as possible.
+/// The output will be sequenced into an array.
+///
+/// - Parameter parser: Parser<T>
+/// - Returns: Parser<[T]>. This will be empty if there was no match.
+public func many<T>(_ parser: Parser<T>)-> Parser<[T]> {
+    return Parser<[T]> { input in
+        return .success(parser.parseZeroOrMore(input))
+    }
+}
+
+
+extension Parser {
+    
+    /// Parse the given input as many time as possible collecting the output.
+    ///
+    /// - Parameter input: Stream
+    /// - Returns: ([Output], Stream)
+    public func parseZeroOrMore(_ input: Stream) -> ([Output], Stream) {
+        let thisRun = self.run(input)
+        switch thisRun {
+        case .failure:
+            return ([], input)
+        case let .success(v):
+            let (subsequentValues, remainder) = parseZeroOrMore(v.1)
+            let values = [v.0] + subsequentValues
+            return (values, remainder)
+        }
+    }
+    
+}
+
+
+/// Parse given input 1 or more times
+///
+/// - Parameter parser: Parser<T>
+/// - Returns: Parser<[T]>. If the parser matches none, it will error.
+public func many1<T>(_ parser: Parser<T>) -> Parser<[T]> {
+    return Parser<[T]> { input in
+        let zeroOrMore = parser.parseZeroOrMore(input)
+        guard !zeroOrMore.0.isEmpty else {
+            return parser.map { [$0] }.run(input)
+        }
+        return .success(zeroOrMore)
+    }
+}
+
+
+/// Match for optional existance. In case of match, the character is consumed as
+/// like expected. When there is no, stream is not consumed.
+///
+/// - Parameter parser: Parser<T>
+/// - Returns: Parser<T?>
+public func optional<T>(_ parser: Parser<T>) -> Parser<T?> {
+    return Parser<T?> { input in
+        let thisRun = parser.run(input)
+        switch thisRun {
+        case .failure:
+            let out: (T?, Parser<Any>.RemainingStream) = (nil, input)
+            return .success(out)
+        case let .success(v):
+            let out: (T?, Parser<Any>.RemainingStream) = (v.0, v.1)
+            return .success(out)
+        }
+    }
 }
 
 

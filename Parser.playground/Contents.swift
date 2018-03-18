@@ -1,23 +1,10 @@
 import Foundation
 
-public func choice<T>(_ parsers: [Parser<T>]) -> Parser<T> {
-    return parsers.foldl1(by: <|>)!
-}
-
-public func anyOf(_ string: String) -> Parser<Character> {
-    return string.map(pchar) |> choice
-}
 
 
-public let allChars = "abcdefghijklmnopqrstuvwxyz"
-public let digits = "0123456789"
-public let whitespacces = ["\t", " "]
-assert(allChars.count == 26)
 
-public let plowercase = allChars.lowercased() |> anyOf
-public let puppercase = allChars.uppercased() |> anyOf
-public let pdigit = digits |> anyOf |>> {Int(String($0))!}
-public let pwhitespace = whitespacces.joined() |> anyOf
+
+
 
 
 
@@ -88,10 +75,15 @@ let headingMatcher = starMatcher ->> whitespaceMatcher
 
 headingMatcher.run(lines)
 
+(pchar("a") |> many).run("aale")
 
+(pchar("a") |> many1).run("aale")
+(pchar("b") |> many1).run("aale")
+(pchar("a") |> many).run("ball")
 
+pint.run("123,")
 
-
+let plineend = pchar("\n")
 
 
 
