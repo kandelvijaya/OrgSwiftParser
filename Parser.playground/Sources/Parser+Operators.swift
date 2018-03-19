@@ -12,11 +12,22 @@ public func |> <T,U>(_ value: T, _ transfrom: (T) -> U) -> U {
     return transfrom(value)
 }
 
+infix operator |?>: ApplicationPrecedenceGroup
+public func |?> <T,U>(_ value: T?, _ transfrom: (T) -> U) -> U? {
+    return value.map(transfrom)
+}
+
 
 /// Functor
+
 infix operator |>>: ApplicationPrecedenceGroup
 public func |>> <T,U>(_ value: Parser<T>, _ transfrom: @escaping (T) -> U) -> Parser<U> {
-    return value.map(transfrom)
+    return map(transfrom, to: value)
+}
+
+infix operator |?>>: ApplicationPrecedenceGroup
+public func |?>> <T,U>(_ value: Parser<T>?, _ transfrom: @escaping (T) -> U) -> Parser<U>? {
+    return value.map { map(transfrom, to: $0) }
 }
 
 
@@ -29,6 +40,7 @@ infix operator ->>-: AndThenPrecedenceGroup
 public func ->>- <T,U>(_ lhs: Parser<T>, _ rhs: Parser<U>) -> Parser<(T,U)> {
     return lhs.andThen(rhs)
 }
+
 
 infix operator <|>: ApplicationPrecedenceGroup
 public func <|> <T>(_ lhs: Parser<T>, _ rhs: Parser<T>) -> Parser<T> {
@@ -58,6 +70,6 @@ public func <*><T,U>(_ wrapped: Parser<((T) -> U)>, _ parser: Parser<T>) -> Pars
 
 /// Monad
 infix operator |>>=: ApplicationPrecedenceGroup
-public func |>>= <T,U>(_ transform: @escaping ((T) -> Parser<U>), _ parser: Parser<T>) -> Parser<U> {
-    return parser.flatMap(transform)
+public func |>>= <T,U>(_ parser: Parser<T>, _ transform: @escaping ((T) -> Parser<U>)) -> Parser<U> {
+    return flatMap(parser, transform)
 }

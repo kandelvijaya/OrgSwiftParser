@@ -17,7 +17,7 @@ public let pwhitespace = whitespacces.joined() |> anyOfChar
 public var pint: Parser<Int> {
     let pminus = pchar("-")
     let optSignedInt = pminus |> optional ->>- digits |> anyOfChar |> many1 |>> { Int(String($0))! }
-    return optSignedInt.map { (charO, int) in
+    return optSignedInt |>> { (charO, int) in
         return charO.map{_ in -int } ?? int
     }
 }

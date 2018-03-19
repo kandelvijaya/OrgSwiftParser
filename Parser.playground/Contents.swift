@@ -9,45 +9,58 @@ import Foundation
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//////////////////////////
+
 /// Test site
 let aChar = pchar(Character("a"))
-//aChar.run("allo")
-//aChar.run("ball")
-
 let bChar = pchar(Character("b"))
 let lChar = pchar(Character("l"))
 
 let aballaChar = aChar.andThen(bChar).andThen(aChar).andThen(lChar).andThen(lChar).andThen(aChar)
-aballaChar.run("aballa")
-aballaChar.run("vijaya")
+aballaChar |> run("aballa")
+aballaChar |> run("vijaya")
 
 let aballaCharArr = [aChar, bChar, aChar ,lChar, lChar, aChar]
 
 let intParser = "1234567890".map(pchar)
 
 let intParserSequenced = intParser.foldl1(by: Parser.orElse)
-let intP = intParserSequenced.flatMap{ par in par.map{ Int(String($0)) } }
-intParserSequenced?.run("123")
+let intP = intParserSequenced.flatMap{ par in par.map { Int(String($0)) } }
+intParserSequenced |?> run("123")
 
-aChar.andThen(intP!).run("a1")
+aChar.andThen(intP!) |> run("a1")
 
 
 
 let aOrb = aChar.orElse(bChar)
-aOrb.run("a cat")
-aOrb.run("ball")
-aOrb.run("vall")
+aOrb |> run("a cat")
+aOrb |> run("ball")
+aOrb |> run("vall")
 
 aballaCharArr
-sequenceOutput(aballaCharArr).run("aballa")
+sequenceOutput(aballaCharArr) |> run("aballa")
 // aballaChar.run("aballa")
-sequenceOutput([Parser<Character>]()).run("aballa")
-"0123456789".map(pchar).foldl1(by: <|>)!.run("1")
+sequenceOutput([Parser<Character>]()) |> run("aballa")
+"0123456789".map(pchar).foldl1(by: <|>)! |> run("1")
 
-pstring("hello").run("hello there")
+pstring("hello") |> run("hello there")
 
 
-pquotedString("hello").run("\"hello\" there ")
+pquotedString("hello") |> run("\"hello\" there ")
 pquotedString("hello") <|> pquotedString("hi")
 
 
@@ -73,15 +86,15 @@ let starMatcher = pchar(Character("*")) |>> {String($0)}
 let whitespaceMatcher = pstring(" ") <|> pstring("\t")
 let headingMatcher = starMatcher ->> whitespaceMatcher
 
-headingMatcher.run(lines)
+headingMatcher |> run(lines)
 
-(pchar("a") |> many).run("aale")
+(pchar("a") |> many) |> run("aale")
 
-(pchar("a") |> many1).run("aale")
-(pchar("b") |> many1).run("aale")
-(pchar("a") |> many).run("ball")
+(pchar("a") |> many1) |> run("aale")
+(pchar("b") |> many1) |> run("aale")
+(pchar("a") |> many) |> run("ball")
 
-pint.run("123,")
+pint |> run("123,")
 
 let plineend = pchar("\n")
 
