@@ -10,12 +10,28 @@ public struct Parser<Output> {
     public typealias ParsedOutput = Result<(Output, RemainingStream)>
     
     public let parse: (Stream) -> ParsedOutput
+    var label: ParserError.Label? = nil
     
     public init(parse: @escaping (Stream) -> ParsedOutput) {
         self.parse = parse
     }
+    
+    public init(parse: @escaping (Stream) -> ParsedOutput, label: String) {
+        self.parse = parse
+        self.label = label
+    }
+    
 }
 
+
+public func labelParser<T>(_ parser: Parser<T>, _ label: String) -> Parser<T> {
+    return Parser<T>.init(parse: parser.parse, label: label)
+}
+
+infix operator <?>: ApplicationPrecedenceGroup
+public func <?><T>(_ parser: Parser<T>, _ label: String) -> Parser<T> {
+    return labelParser(parser, label)
+}
 
 
 /// InputStream to run the parser against.

@@ -1,8 +1,9 @@
 import Foundation
 
 public enum Result<T> {
+    
     case success(T)
-    case failure(String)
+    case failure(ParserError)
     
     public func map<U>(_ transform: (T) -> U) -> Result<U> {
         switch self {
@@ -25,4 +26,5 @@ public enum Result<T> {
             return .failure(e)
         }
     }
+    
 }

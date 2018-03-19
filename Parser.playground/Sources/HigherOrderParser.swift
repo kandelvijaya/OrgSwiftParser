@@ -5,10 +5,10 @@ import Foundation
 
 public let digits = "0123456789"
 public let whitespacces = ["\t", " "]
-public let plowercase = allAlphabets.lowercased() |> anyOfChar
-public let puppercase = allAlphabets.uppercased() |> anyOfChar
-public let pdigit = digits |> anyOfChar |>> {Int(String($0))!}
-public let pwhitespace = whitespacces.joined() |> anyOfChar
+public let plowercase = allAlphabets.lowercased() |> anyOfChar <?> "lowercase alphabets"
+public let puppercase = allAlphabets.uppercased() |> anyOfChar <?> "uppercase alphabets"
+public let pdigit = digits |> anyOfChar |>> {Int(String($0))!} <?> "integers"
+public let pwhitespace = whitespacces.joined() |> anyOfChar <?> "whitespaces"
 
 public var allAlphabets: String{
     let temp = "abcdefghijklmnopqrstuvwxyz"
@@ -26,10 +26,10 @@ public var allAlphabets: String{
 public func pchar(_ charToMatch: Character) -> Parser<Character> {
     return Parser { str in
         guard let char = str.first else {
-            return .failure("stream is empty")
+            return .failure(error("character", "stream is empty"))
         }
         guard char == charToMatch else {
-            return .failure("Expected \(charToMatch) but got \(char)")
+            return .failure(error("character", "Expected \(charToMatch) but got \(char)"))
         }
         let remaining = String(str.dropFirst())
         return .success((char, remaining))

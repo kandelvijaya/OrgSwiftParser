@@ -14,15 +14,6 @@ import Foundation
 
 
 
-
-
-
-
-
-
-
-
-
 //////////////////////////
 
 /// Test site
@@ -98,7 +89,18 @@ pint |> run("123,")
 
 let plineend = pchar("\n")
 
+let anyCharP = anyOfChar(digits + allAlphabets)
+let commaP = pchar(Character(","))
+
+let commaSeparateCharP = separated1(anyCharP, by: commaP)
+commaSeparateCharP |> run("#a1,2,3,4;+45")
 
 
+many(commaP >>- anyCharP) |> run("ab")
 
+let separatedBy = (anyCharP ->>- many(commaP >>- anyCharP)) |>> { [$0.0] + $0.1 }
+separatedBy |> run("ab")
+
+
+anyOfChar(digits) |> run("lamo") |> log
 

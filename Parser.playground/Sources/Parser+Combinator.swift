@@ -151,11 +151,36 @@ public func optional<T>(_ parser: Parser<T>) -> Parser<T?> {
         let thisRun = parser |> run(input)
         switch thisRun {
         case .failure:
-            let out: (T?, Parser<Any>.RemainingStream) = (nil, input)
+            let out: (T?, Parser<T>.RemainingStream) = (nil, input)
             return .success(out)
         case let .success(v):
-            let out: (T?, Parser<Any>.RemainingStream) = (v.0, v.1)
+            let out: (T?, Parser<T>.RemainingStream) = (v.0, v.1)
             return .success(out)
         }
     }
+}
+
+/// Creates a parser which will match for parser separated by separator Parser
+/// It expects to match atleast once
+///
+/// - Parameters:
+///   - parser: Parser<T> include parser
+///   - separator: Parser<T> sepearotr parser
+/// - Returns: Parser<[T]> list of matches
+public func separated1<T>(_ parser: Parser<T>, by separator: Parser<T>) -> Parser<[T]> {
+    let separatorThenP = separator >>- parser
+    let manySepAndP = many(separatorThenP)
+    let match = parser ->>- manySepAndP
+    return match |>> { [$0.0] + $0.1 }
+}
+
+
+/// Creates a parser that matches for 0 or more times separated by given parser
+///
+/// - Parameters:
+///   - parser: Parser<T> to include
+///   - separator: Parser<T> to exclude/separate
+/// - Returns: Parser<[T]> where [T] is the sequenced output
+public func separated<T>(_ parser: Parser<T>, by separator: Parser<T>) -> Parser<[T]> {
+    return separated1(parser, by: separator) <|> lift([T]())
 }
