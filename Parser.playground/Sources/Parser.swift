@@ -17,10 +17,11 @@ public struct Parser<Output> {
 }
 
 
-/// We will defer the input until the very end
-/// because we won't apply it from the very start
-/// and we might not have input at the begining
-/// In the end, input is provided by run(:) function.
+
+/// InputStream to run the parser against.
+///
+/// - Parameter input: The parser to use to match.
+/// - Returns: Result<(Output, RemainingStream)>
 public func run<T>(_ input: Parser<T>.Stream) -> (Parser<T>) -> Parser<T>.ParsedOutput {
     return { parser in
         return parser.parse(input)
