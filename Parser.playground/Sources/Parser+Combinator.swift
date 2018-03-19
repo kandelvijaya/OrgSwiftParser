@@ -9,20 +9,10 @@ extension Parser {
     /// - Parameter nextParser: Parser<T>
     /// - Returns: Parser<(Output, T)> is a combined parser.
     public func andThen<T>(_ nextParser: Parser<T>) -> Parser<(Output,T)> {
-        return Parser<(Output, T)> { input in
-            let firstRun = self |> run(input)
-            switch firstRun {
-            case let .success(v):
-                let nextRun = nextParser |> run(v.1)
-                switch nextRun {
-                case let .success(v2):
-                    let value = ((v.0, v2.0), v2.1)
-                    return .success(value)
-                case let .failure(e):
-                    return .failure(e)
-                }
-            case let .failure(e):
-                return .failure(e)
+        return self.flatMap { out1 in
+            return nextParser.flatMap { out2 in
+                let out = (out1, out2)
+                return lift(out)
             }
         }
     }

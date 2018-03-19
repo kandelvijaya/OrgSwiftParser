@@ -113,7 +113,9 @@ public func lift<T>(_ output: T) -> Parser<T> {
 ///   - parser: Parser<T>
 /// - Returns: Parser<U>
 public func applic<T,U>(_ wrapped: Parser<((T) -> U)>, to parser: Parser<T>) -> Parser<U> {
-    return flatMap(wrapped) { map($0, to: parser) }
+    return wrapped |>>= { function in
+        return parser |>> function
+    }
 }
 
 /// Custom operator for applicative apply.
