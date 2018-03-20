@@ -4,15 +4,19 @@
 
 import Foundation
 
-
 public struct ParserError {
     public typealias Label = String
     let label: Parser<Any>.Label
     let error: String
+    let position: ParserPosition
 }
 
-public func error(_ label: Parser<Any>.Label, _ errorDescription: String) -> ParserError {
-    return ParserError(label: label, error: errorDescription)
+public func error(_ label: Parser<Any>.Label, _ errorDescription: String, _ state: InputState) -> ParserError {
+    return ParserError(label: label, error: errorDescription, position: state.parserPosition())
+}
+
+public func error(_ label: Parser<Any>.Label, _ errorDescription: String, _ position: ParserPosition) -> ParserError {
+    return ParserError(label: label, error: errorDescription, position: position)
 }
 
 
@@ -21,9 +25,17 @@ public func show<T>(_ result: Result<T>) {
     case let .success(v):
         print(v)
     case let .failure(e):
-        let line1 = "Error parsing \(e.label)"
+        let line1 = "Line: \(e.position.row + 1), Col: \(e.position.col) Error parsing \(e.label)"
         let line2 = "\(e.error)"
+        let impactedLine = e.position.currentLine
+        let whiteSpace = Array<Character>(repeating: Character(" "), count: e.position.col - 1)
+        let caret = "^____"
+        let impact = String(whiteSpace) + caret
+        print(impactedLine)
+        print(impact)
         print(line1)
         print(line2)
+        
     }
 }
+

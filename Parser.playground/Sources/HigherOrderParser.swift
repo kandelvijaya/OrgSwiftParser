@@ -21,15 +21,17 @@ public var allAlphabets: String{
 
 public func satisfy(_ predicate: @escaping (Character) -> Bool, label: Parser<Any>.Label) -> Parser<Character> {
     return Parser<Character> { str in
-        guard let char = str.first else {
-            return .failure(error(label, "stream is empty"))
+        switch str.nextChar() {
+        case (let state, let char?):
+            if predicate(char) {
+                return .success((char, state))
+            } else {
+                return .failure(error(label, "Unexpected '\(char)'", state))
+            }
+        case (let state, nil):
+            return .failure(error(label, "stream is empty", state))
         }
-        guard predicate(char) else {
-            return .failure(error(label, "Unexpected '\(char)'"))
-        }
-        let remaining = String(str.dropFirst())
-        return .success((char, remaining))
-        } <?> label
+    } <?> label
 }
 
 

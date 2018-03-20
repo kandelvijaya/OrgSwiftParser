@@ -5,9 +5,9 @@ import Foundation
 
 // Q: Is it better to model parser with 2 generic types: Input, Output
 public struct Parser<Output> {
-    public typealias Stream = String
+    public typealias Stream = InputState
     public typealias Label = String
-    public typealias RemainingStream = Stream
+    public typealias RemainingStream = InputState
     public typealias ParsedOutput = Result<(Output, RemainingStream)>
     
     public let parse: (Stream) -> ParsedOutput
@@ -32,7 +32,7 @@ public func setLabel<T>(_ parser: Parser<T>, _ label: String) -> Parser<T> {
         case let .success(v):
             return .success(v)
         case let .failure(e):
-            let out = error(label, e.error)
+            let out = error(label, e.error, e.position)
             return .failure(out)
         }
     }, label: label)
@@ -51,6 +51,13 @@ public func <?><T>(_ parser: Parser<T>, _ label: String) -> Parser<T> {
 public func run<T>(_ input: Parser<T>.Stream) -> (Parser<T>) -> Parser<T>.ParsedOutput {
     return { parser in
         return parser.parse(input)
+    }
+}
+
+public func run<T>(_ input: String) -> (Parser<T>) -> Parser<T>.ParsedOutput {
+    let state = input |> InputState.init
+    return { parser in
+        return parser.parse(state)
     }
 }
 

@@ -1,5 +1,20 @@
 import Foundation
 
+func readAllChars(_ state: InputState) -> [Character] {
+    let new = state.nextChar()
+    switch new {
+    case (let newState, let char?):
+        return [char] + readAllChars(newState)
+    case (_, nil):
+        return []
+    }
+}
+
+
+
+
+
+
 //////////////////////////
 
 /// Test site
@@ -56,6 +71,12 @@ let lines = """
             ** This is next heading 1's subheading
             *** This is h3.
             """
+
+let input = InputState(from: lines)
+let out = readAllChars(input).reduce("", { $0 + String($1)})
+print(out)
+
+
 
 
 let newLineMatcher = pchar(Character("\n")) |>> { String($0) }
