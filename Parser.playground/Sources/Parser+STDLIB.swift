@@ -4,11 +4,11 @@ import Foundation
 // MARK:- primitive
 
 public let digits = "0123456789"
-public let whitespacces = ["\t", " "]
-public let plowercase = allAlphabets.lowercased() |> anyOfChar <?> "lowercase alphabets"
-public let puppercase = allAlphabets.uppercased() |> anyOfChar <?> "uppercase alphabets"
-public let pdigit = digits |> anyOfChar |>> {Int(String($0))!} <?> "Digits"
-public let pwhitespace = whitespacces.joined() |> anyOfChar <?> "Whitespaces"
+public let whitespacces = ["\t", " "].joined()
+public let plowercase = allAlphabets.lowercased() |> anyOfChars <?> "lowercase alphabets"
+public let puppercase = allAlphabets.uppercased() |> anyOfChars <?> "uppercase alphabets"
+public let pdigit = digits |> anyOfChars |>> {Int(String($0))!} <?> "Digits"
+public let pwhitespace = whitespacces |> anyOfChars <?> "Whitespaces"
 
 public var allAlphabets: String{
     let temp = "abcdefghijklmnopqrstuvwxyz"
@@ -18,7 +18,6 @@ public var allAlphabets: String{
 
 
 // MARK:- Still primitive but more than a character
-
 public func satisfy(_ predicate: @escaping (Character) -> Bool, label: Parser<Any>.Label) -> Parser<Character> {
     return Parser<Character> { str in
         switch str.nextChar() {
@@ -26,10 +25,10 @@ public func satisfy(_ predicate: @escaping (Character) -> Bool, label: Parser<An
             if predicate(char) {
                 return .success((char, state))
             } else {
-                return .failure(error(label, "Unexpected '\(char)'", state))
+                return .failure(error(label, "Unexpected '\(char)'", state.parserPosition()))
             }
         case (let state, nil):
-            return .failure(error(label, "stream is empty", state))
+            return .failure(error(label, "stream is empty", state.parserPosition()))
         }
     } <?> label
 }
@@ -50,7 +49,7 @@ public func pchar(_ character: Character) -> Parser<Character> {
 ///
 /// - Parameter string: String
 /// - Returns: Parser<Character>
-public func anyOfChar(_ string: String) -> Parser<Character> {
+public func anyOfChars(_ string: String) -> Parser<Character> {
     return string.map(pchar) |> choice <?> "Any of \(string)"
 }
 
@@ -77,8 +76,26 @@ public func pquotedString(_ match: String) -> Parser<String> {
 /// Parser for signed and unsigned Int
 public var pint: Parser<Int> {
     let pminus = pchar("-")
-    let optSignedInt = pminus |> optional ->>- digits |> anyOfChar |> many1 |>> { Int(String($0))! }
+    let optSignedInt = pminus |> optional ->>- digits |> anyOfChars |> many1 |>> { Int(String($0))! }
     return optSignedInt |>> { (charO, int) in
         return charO.map{_ in -int } ?? int
     } <?> "Integer"
 }
+
+
+/// manyChars
+public func manyChar(_ charP: Parser<Character>) -> Parser<String> {
+    return charP |> many |>> { String($0) }
+}
+
+/// many1Chars
+public func many1Char(_ charP: Parser<Character>) -> Parser<String> {
+    return charP |> many1 |>> { String($0) }
+}
+
+
+/// manySpaces
+public let manySpaces = whitespacces |> anyOfChars |> many |>> { String($0) }
+
+/// many1Spaces
+public let many1Spaces = whitespacces |> anyOfChars |> many1 |>> {String($0)}

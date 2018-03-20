@@ -11,16 +11,14 @@ func readAllChars(_ state: InputState) -> [Character] {
 }
 
 
-
-
-
-
 //////////////////////////
 
 /// Test site
 let aChar = pchar(Character("a"))
 let bChar = pchar(Character("b"))
 let lChar = pchar(Character("l"))
+
+lChar <?> "lchar" |> run("peee") |> show
 
 let aballaChar = aChar.andThen(bChar).andThen(aChar).andThen(lChar).andThen(lChar).andThen(aChar)
 aballaChar |> run("aballa")
@@ -96,7 +94,7 @@ pint |> run("123,")
 
 let plineend = pchar("\n")
 
-let anyCharP = anyOfChar(digits + allAlphabets)
+let anyCharP = anyOfChars(digits + allAlphabets)
 let commaP = pchar(Character(","))
 
 let commaSeparateCharP = separated1(anyCharP, by: commaP)
@@ -109,5 +107,5 @@ let separatedBy = (anyCharP ->>- many(commaP >>- anyCharP)) |>> { [$0.0] + $0.1 
 separatedBy |> run("ab")
 
 
-anyOfChar(digits) |> run("lamo") |> show
+anyOfChars(digits) |> run("lamo") |> show
 
