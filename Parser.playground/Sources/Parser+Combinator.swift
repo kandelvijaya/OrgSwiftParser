@@ -83,8 +83,25 @@ extension Parser {
 }
 
 
-
-
+/// Given a list of same typed parsers, reduce them into single parser
+/// In the process, sequencing the parsed output in order
+/// In case of empty parsers input, we return a identity parser on []
+///
+/// - Parameter parsers: [Parser<T>]
+/// - Returns: Parser<[T]>
+public func sequenceOutput<T>(_ parsers: [Parser<T>]) -> Parser<[T]> {
+    guard let first = parsers.first else {
+        return Parser<[T]> { input in
+            let output = ([T](), input)
+            return .success(output)
+        }
+    }
+    
+    let others: Parser<[T]> = sequenceOutput(Array(parsers.dropFirst()))
+    let firstMapped: Parser<[T]> = first |>> { [$0] }
+    let andThenned = firstMapped.andThen(others)
+    return andThenned |>> { $0.0 + $0.1 } <?> "Sequence of '\(parsers.reduce("", { $0 + $1.label}))'"
+}
 
 
 /// Find the parser that works from the list

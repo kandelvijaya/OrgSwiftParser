@@ -1,19 +1,5 @@
 import Foundation
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //////////////////////////
 
 /// Test site
@@ -103,4 +89,4 @@ separatedBy |> run("ab")
 
 
 anyOfChar(digits) |> run("lamo") |> show
-*/
+
