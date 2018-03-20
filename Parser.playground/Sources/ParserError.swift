@@ -25,16 +25,15 @@ public func show<T>(_ result: Result<T>) {
     case let .success(v):
         print(v)
     case let .failure(e):
-        let line1 = "Line: \(e.position.row + 1), Col: \(e.position.col) Error parsing \(e.label)"
-        let line2 = "\(e.error)"
+        let lineInfoWithLabel = "Line: \(e.position.row + 1), Col: \(e.position.col) Error parsing \(e.label)"
+        let errorDescription = "\(e.error)"
         let impactedLine = e.position.currentLine
         let whiteSpace = Array<Character>(repeating: Character(" "), count: e.position.col - 1)
         let caret = "^____"
-        let impact = String(whiteSpace) + caret
+        let impact = String(whiteSpace) + caret + errorDescription
+        print(lineInfoWithLabel)
         print(impactedLine)
         print(impact)
-        print(line1)
-        print(line2)
         
     }
 }
