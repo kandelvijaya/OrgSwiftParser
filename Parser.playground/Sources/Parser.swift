@@ -6,11 +6,12 @@ import Foundation
 // Q: Is it better to model parser with 2 generic types: Input, Output
 public struct Parser<Output> {
     public typealias Stream = String
+    public typealias Label = String
     public typealias RemainingStream = Stream
     public typealias ParsedOutput = Result<(Output, RemainingStream)>
     
     public let parse: (Stream) -> ParsedOutput
-    var label: ParserError.Label? = nil
+    public var label: Label = ""
     
     public init(parse: @escaping (Stream) -> ParsedOutput) {
         self.parse = parse
@@ -24,13 +25,22 @@ public struct Parser<Output> {
 }
 
 
-public func labelParser<T>(_ parser: Parser<T>, _ label: String) -> Parser<T> {
-    return Parser<T>.init(parse: parser.parse, label: label)
+public func setLabel<T>(_ parser: Parser<T>, _ label: String) -> Parser<T> {
+    return Parser<T> (parse: { input in
+        let prun = parser |> run(input)
+        switch prun {
+        case let .success(v):
+            return .success(v)
+        case let .failure(e):
+            let out = error(label, e.error)
+            return .failure(out)
+        }
+    }, label: label)
 }
 
 infix operator <?>: ApplicationPrecedenceGroup
 public func <?><T>(_ parser: Parser<T>, _ label: String) -> Parser<T> {
-    return labelParser(parser, label)
+    return setLabel(parser, label)
 }
 
 

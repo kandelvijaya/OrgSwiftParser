@@ -24,7 +24,7 @@ public func map<T,U>(_ by: @escaping (T) -> U, to inParser: Parser<T>) -> Parser
         case let .failure(e):
             return .failure(e)
         }
-    }
+    } <?> inParser.label
 }
 
 

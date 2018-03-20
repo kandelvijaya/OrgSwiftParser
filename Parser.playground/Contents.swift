@@ -102,5 +102,5 @@ let separatedBy = (anyCharP ->>- many(commaP >>- anyCharP)) |>> { [$0.0] + $0.1 
 separatedBy |> run("ab")
 
 
-anyOfChar(digits) |> run("lamo") |> log
-
+anyOfChar(digits) |> run("lamo") |> show
+*/
