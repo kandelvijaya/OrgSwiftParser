@@ -1,0 +1,11 @@
+framework module ParserCombinator {
+  umbrella header "ParserCombinator.h"
+
+  export *
+  module * { export * }
+}
+
+module ParserCombinator.Swift {
+    header "ParserCombinator-Swift.h"
+    requires objc
+}

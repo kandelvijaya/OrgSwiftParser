@@ -4,11 +4,6 @@ import Foundation
 
 precedencegroup ApplicationPrecedenceGroup {
     associativity: left
-    higherThan: AndThenPrecedenceGroup
-}
-
-precedencegroup AndThenPrecedenceGroup {
-    associativity: left
     higherThan: AssignmentPrecedence
 }
 
@@ -36,20 +31,20 @@ public func <|> <T>(_ lhs: Parser<T>, _ rhs: Parser<T>) -> Parser<T> {
  However, swift compiler warns for the last instance: >>.
  */
 
-infix operator ->>-: AndThenPrecedenceGroup
+infix operator ->>-: ApplicationPrecedenceGroup
 public func ->>- <T,U>(_ lhs: Parser<T>, _ rhs: Parser<U>) -> Parser<(T,U)> {
     return lhs.andThen(rhs)
 }
 
 
 infix operator ->>: ApplicationPrecedenceGroup
-public func ->> <T>(_ lhs: Parser<T>, _ rhs: Parser<T>) -> Parser<T> {
+public func ->> <T,U>(_ lhs: Parser<T>, _ rhs: Parser<U>) -> Parser<T> {
     return lhs.keepLeft(rhs)
 }
 
 
 infix operator >>-: ApplicationPrecedenceGroup
-public func >>- <T>(_ lhs: Parser<T>, _ rhs: Parser<T>) -> Parser<T> {
+public func >>- <T,U>(_ lhs: Parser<T>, _ rhs: Parser<U>) -> Parser<U> {
     return lhs.keepRight(rhs)
 }
 

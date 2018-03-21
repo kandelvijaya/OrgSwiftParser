@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		851D93122061C35B00EE9082 /* ArrayExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 851D93082061C35B00EE9082 /* ArrayExtension.swift */; };
-		851D93132061C35B00EE9082 /* HigherOrderParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 851D93092061C35B00EE9082 /* HigherOrderParser.swift */; };
 		851D93142061C35B00EE9082 /* Result.swift in Sources */ = {isa = PBXBuildFile; fileRef = 851D930A2061C35B00EE9082 /* Result.swift */; };
 		851D93152061C35B00EE9082 /* ParserError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 851D930B2061C35B00EE9082 /* ParserError.swift */; };
 		851D93162061C35B00EE9082 /* InputState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 851D930C2061C35B00EE9082 /* InputState.swift */; };
@@ -34,7 +33,6 @@
 
 /* Begin PBXFileReference section */
 		851D93082061C35B00EE9082 /* ArrayExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ArrayExtension.swift; path = ../../Parser.playground/Sources/ArrayExtension.swift; sourceTree = "<group>"; };
-		851D93092061C35B00EE9082 /* HigherOrderParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = HigherOrderParser.swift; path = ../../Parser.playground/Sources/HigherOrderParser.swift; sourceTree = "<group>"; };
 		851D930A2061C35B00EE9082 /* Result.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Result.swift; path = ../../Parser.playground/Sources/Result.swift; sourceTree = "<group>"; };
 		851D930B2061C35B00EE9082 /* ParserError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ParserError.swift; path = ../../Parser.playground/Sources/ParserError.swift; sourceTree = "<group>"; };
 		851D930C2061C35B00EE9082 /* InputState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = InputState.swift; path = ../../Parser.playground/Sources/InputState.swift; sourceTree = "<group>"; };
@@ -92,7 +90,6 @@
 			isa = PBXGroup;
 			children = (
 				851D93082061C35B00EE9082 /* ArrayExtension.swift */,
-				851D93092061C35B00EE9082 /* HigherOrderParser.swift */,
 				851D930C2061C35B00EE9082 /* InputState.swift */,
 				851D930E2061C35B00EE9082 /* Parser.swift */,
 				851D930F2061C35B00EE9082 /* Parser+Combinator.swift */,
@@ -231,7 +228,6 @@
 				851D93142061C35B00EE9082 /* Result.swift in Sources */,
 				851D931B2061C35B00EE9082 /* Parser+TypedMethods.swift in Sources */,
 				851D931A2061C35B00EE9082 /* Parser+Monad.swift in Sources */,
-				851D93132061C35B00EE9082 /* HigherOrderParser.swift in Sources */,
 				851D93172061C35B00EE9082 /* Parser+Operators.swift in Sources */,
 				851D93162061C35B00EE9082 /* InputState.swift in Sources */,
 				851D93122061C35B00EE9082 /* ArrayExtension.swift in Sources */,

@@ -49,18 +49,17 @@ extension Parser {
     ///
     /// - Parameters:
     ///   - rhs: Parser<T>
-    /// - Returns: Parser<T>
-    public func keepLeft( _ rhs: Parser) -> Parser {
+    /// - Returns: Parser<Output>
+    public func keepLeft<T>( _ rhs: Parser<T>) -> Parser<Output> {
         return self.andThen(rhs) |>> { $0.0 }
     }
-    
     
     /// Use both parses but ignore left's output
     ///
     /// - Parameters:
     ///   - rhs: Parser<T>
     /// - Returns: Parser<T>
-    public func keepRight(_ rhs: Parser) -> Parser {
+    public func keepRight<T>(_ rhs: Parser<T>) -> Parser<T> {
         return self.andThen(rhs) |>> { $0.1 }
     }
     

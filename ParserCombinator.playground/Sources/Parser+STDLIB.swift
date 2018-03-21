@@ -4,7 +4,7 @@ import Foundation
 // MARK:- primitive
 
 public let digits = "0123456789"
-public let whitespacces = ["\t", " "].joined()
+public let whitespacces = ["\t", " ", "\n"].joined()
 public let plowercase = allAlphabets.lowercased() |> anyOfChars <?> "lowercase alphabets"
 public let puppercase = allAlphabets.uppercased() |> anyOfChars <?> "uppercase alphabets"
 public let pdigit = digits |> anyOfChars |>> {Int(String($0))!} <?> "Digits"
@@ -76,7 +76,7 @@ public func pquotedString(_ match: String) -> Parser<String> {
 /// Parser for signed and unsigned Int
 public var pint: Parser<Int> {
     let pminus = pchar("-")
-    let optSignedInt = pminus |> optional ->>- (digits |> anyOfChars |> many1) |>> { Int(String($0))! }
+    let optSignedInt = pminus |> optional ->>- ((digits |> anyOfChars |> many1) |>> { Int(String(describing: $0))! })
     return optSignedInt |>> { (charO, int) in
         return charO.map{_ in -int } ?? int
     } <?> "Integer"
