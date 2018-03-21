@@ -1,5 +1,9 @@
 import Foundation
 
+
+
+//////////////////////////
+
 func readAllChars(_ state: InputState) -> [Character] {
     let new = state.nextChar()
     switch new {
@@ -10,8 +14,6 @@ func readAllChars(_ state: InputState) -> [Character] {
     }
 }
 
-
-//////////////////////////
 
 /// Test site
 let aChar = pchar(Character("a"))
@@ -109,3 +111,5 @@ separatedBy |> run("ab")
 
 anyOfChars(digits) |> run("lamo") |> show
 
+
+pfloat |> run("-123.0")

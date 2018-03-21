@@ -76,10 +76,33 @@ public func pquotedString(_ match: String) -> Parser<String> {
 /// Parser for signed and unsigned Int
 public var pint: Parser<Int> {
     let pminus = pchar("-")
-    let optSignedInt = pminus |> optional ->>- digits |> anyOfChars |> many1 |>> { Int(String($0))! }
+    let optSignedInt = pminus |> optional ->>- (digits |> anyOfChars |> many1) |>> { Int(String($0))! }
     return optSignedInt |>> { (charO, int) in
         return charO.map{_ in -int } ?? int
     } <?> "Integer"
+}
+
+/// Parser for float
+public var pfloat: Parser<Float> {
+    // (opt sign) (digits many1) (pdot) (digits many)
+    let optSign = (pchar("-") |> optional)
+    let leftDigits = (digits.map(pchar) |> choice |> many1)
+    let rightDigits = leftDigits
+    let dot = pchar(".")
+    
+    /// ->>- combinator produces output of (A, B) to represent
+    /// heterogeneous collection in pair.
+    /// ((A,B),C) == (A,B,C)
+    let parser = (optSign ->>- leftDigits ->>- dot ->>- rightDigits).map {
+        return ($0.0.0.0, $0.0.0.1, $0.0.1, $0.1)
+    }
+    
+    return parser.map {
+        let floatStr = String($0.1) + String($0.2) + String($0.3)
+        let signMultiplier: Float = ($0.0 == nil ? 1 : -1)
+        let float = Float(floatStr)! * signMultiplier
+        return float
+        } <?> "float"
 }
 
 
