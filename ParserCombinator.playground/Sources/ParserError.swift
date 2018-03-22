@@ -20,7 +20,7 @@ public func error(_ label: Parser<Any>.Label, _ errorDescription: String, _ posi
 }
 
 
-public func show<T>(_ result: Result<T>) {
+public func show<T>(_ result: Result<T>) -> Result<T> {
     switch result {
     case let .success(v):
         print(v)
@@ -34,7 +34,8 @@ public func show<T>(_ result: Result<T>) {
         print(lineInfoWithLabel)
         print(impactedLine)
         print(impact)
-        
     }
+    
+    return result
 }
 

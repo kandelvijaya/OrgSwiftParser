@@ -75,11 +75,12 @@ public func pquotedString(_ match: String) -> Parser<String> {
 
 /// Parser for signed and unsigned Int
 public var pint: Parser<Int> {
-    let pminus = pchar("-")
-    let optSignedInt = pminus |> optional ->>- ((digits |> anyOfChars |> many1) |>> { Int(String(describing: $0))! })
+    let pminus = pchar("-") |> optional
+    let manyDigitMatcher = digits.map(pchar) |> choice |> many1 |>> { Int(String($0))! }
+    let optSignedInt = pminus ->>- manyDigitMatcher
     return optSignedInt |>> { (charO, int) in
         return charO.map{_ in -int } ?? int
-    } <?> "Integer"
+        } <?> "Integer"
 }
 
 /// Parser for float
