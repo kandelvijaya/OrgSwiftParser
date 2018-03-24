@@ -27,4 +27,22 @@ public enum Result<T> {
         }
     }
     
+    public func value() -> T? {
+        switch self {
+        case let .success(v):
+            return v
+        case .failure:
+            return nil
+        }
+    }
+    
+    public func error() -> ParserError? {
+        switch self {
+        case .success:
+            return nil
+        case let .failure(fe):
+            return fe
+        }
+    }
+    
 }
