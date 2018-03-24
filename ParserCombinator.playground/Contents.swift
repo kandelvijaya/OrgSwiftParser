@@ -42,9 +42,9 @@ func jNumber() -> Parser<JSONValue> {
 
 // MARK:- JSON String parser
 
-let jUnescapedChar = satisfy({ $0 != Character("\\") || $0 != Character("\"")}, label: "char")
+let jUnescapedChar = satisfy({ $0 != Character("\\") && $0 != Character("\"") }, label: "char")
 
-let  escapedChars: [(String, Character)] = [
+let escapedChars: [(String, Character)] = [
     // (stringToMatch, resultChar)
     ("\\\"","\""),      // quote
     ("\\\\","\\"),      // reverse solidus
@@ -86,8 +86,8 @@ var jUnicodeChars: Parser<Character> {
 
 func jStringQuotedRaw() -> Parser<String> {
     let quote = pchar("\"") <?> "quote"
-    let jChar = jEscapedChars <|> jUnescapedChar <|> jUnicodeChars
-    let parser = quote >>- jChar |> many ->> quote
+    let jChars = [jEscapedChars, jUnescapedChar, jUnicodeChars] |> choice |> many
+    let parser = quote >>- jChars ->> quote
     return parser |>> { String($0) }
 }
 
@@ -101,53 +101,24 @@ func jString() -> Parser<JSONValue> {
     return jStringQuoted
 }
 
-
-// MARK:- JSON Object parser
-func jObject() -> Parser<JSONValue> {
-    let open = pchar("{")
-    let close = pchar("}")
-    let key = jStringQuotedRaw()
-    let colon = pchar(":")
-    let whiteSpace = whitespacces.map(pchar) |> choice |> many
-    let parser = parserLookup.currentValue()
-    
-    let wsKey = whiteSpace >>- key ->> whiteSpace
-    let wsValue = whiteSpace >>- parser ->> whiteSpace
-    
-    let keyValue1OrMany = (wsKey ->> colon) ->>- wsValue |> many1
-    
-
-    func kvm() -> Parser<[(String, JSONValue)]> {
-        return keyValue1OrMany
-    }
-    //    let objectMatcher = open >>- keyValue1OrMany ->> close
-    let objectMatcher = open >>- kvm() ->> close
-    
-    return objectMatcher.map { inp in
-        let x = inp.map { [$0.0 : $0.1 ]}.reduce([String: JSONValue](), +)
-        return JSONValue.object(x)
-    } <?> "JSON Object"
-}
-
 final class MutualRecursionForwardReference<T> {
-    
     var recursion_lookup_table: [String: T] = [:]
     private let key = "Key"
     
+    /// Initialize with initial reference
     init(with initialReference: T) {
-        print("Forward reference initialized with \(initialReference)")
         recursion_lookup_table[key] = initialReference
     }
     
+    /// When the mutual recursive defination expression is done
+    /// assign the eventual value to be used.
     func forwardReference(to eventualReference: T) {
-        print("Forward reference evaluated to \(eventualReference)")
         recursion_lookup_table[key] = eventualReference
     }
     
+    /// retrieve reference
     func currentValue() -> T {
-        let value = recursion_lookup_table[key]
-        print("forward reference obtined is \(value!)")
-        return value as! T
+        return recursion_lookup_table[key]!
     }
 }
 
@@ -156,12 +127,8 @@ parserLookup = MutualRecursionForwardReference(with: jNull())
 
 // MARK:- The entire json parser
 func jsonParser() -> Parser<JSONValue> {
-    return [jNull(),
-            jBool(),
-            jNumber(),
-            jString(),
-            jArray(),
-            jObject()] |> choice <?> "JSON Object"
+    return [jNull(), jBool(), jNumber(), jString(), jArray() , jObject()]
+        |> choice <?> "JSON item"
 }
 
 // MARK:- json Array parser
