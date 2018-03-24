@@ -10,12 +10,7 @@ enum JSONValue {
     case array([JSONValue])
 }
 
-
-
 let quote = pchar(Character("\""))
-
-
-
 
 // MARK:- null parser
 // Are js null quoted? or not?
@@ -29,8 +24,8 @@ func jNull() -> Parser<JSONValue> {
 // MARK:- Boolean parser
 // Can boolean be uppercased or not?
 func jBool() -> Parser<JSONValue> {
-    let jtrue = quote >>- pstring("true") ->> quote |>> {_ in JSONValue.bool(true) }
-    let jfalse = quote >>- pstring("false") ->> quote |>> {_ in JSONValue.bool(false) }
+    let jtrue = optional(quote) >>- pstring("true") ->> optional(quote) |>> {_ in JSONValue.bool(true) }
+    let jfalse = optional(quote) >>- pstring("false") ->> optional(quote) |>> {_ in JSONValue.bool(false) }
     return jtrue <|> jfalse  <?> "Boolean"
 }
 
