@@ -138,15 +138,55 @@ func jArray() -> Parser<JSONValue> {
     let ws = pwhitespace |> many
     let comma = pchar(",")
     
-    let value = parserLookup.currentValue()
-    print("Obtained parser is \(value)")
+    let value = Parser<JSONValue> { inp in
+        return parserLookup.currentValue() |> run(inp)
+    }
     
     let wsValue = (ws >>- value ->> ws)
     let wsValueComma = wsValue ->> comma |> many
-    let parser = left >>- wsValueComma ->>- wsValue ->> right |>> { $0.0 + [$0.1] } |>> { JSONValue.array($0) }
+    
+    // Array can be empty []
+    let arrValue = (wsValueComma ->>- wsValue) |> optional
+    
+    let parser = left >>- arrValue ->> right
+        |>> { got in got.map { $0.0 + [$0.1] } ?? [] }
+        |>> { JSONValue.array($0) }
     return parser <?> "JSON Array"
 }
 
+var ws: Parser<[Character]> {
+    return whitespacces.map(pchar) |> choice |> many
+}
+
+// MARK:- JSON Object parser
+func jObject() -> Parser<JSONValue> {
+    let open = pchar("{")
+    let close = pchar("}")
+    let key = jStringQuotedRaw()
+    let colon = pchar(":")
+    
+    /// This doesnot work. Why??????
+    // let parser = parserLookup.currentValue()
+    
+    let parser = Parser<JSONValue> { inp in
+        return parserLookup.currentValue() |> run(inp)
+    }
+    
+    let wsKey = ws >>- key ->> ws
+    let wsValue = ws >>- parser ->> ws
+    
+    let keyValue1 = (wsKey ->> colon) ->>- wsValue
+    
+    let kvmCommas = (keyValue1 ->> pchar(",")) |> many
+    let kvm = kvmCommas ->>- keyValue1 |>> { $0 + [$1] }
+    
+    let objectMatcher = open >>- kvm ->> close
+    
+    return objectMatcher.map { inp in
+        let x = inp.map { [$0.0 : $0.1 ]}.reduce([String: JSONValue](), +)
+        return JSONValue.object(x)
+        } <?> "JSON Object"
+}
 
 /// Addition on Dictionaries. Prefer rhs when duplicate
 func +<T,U>(_ lhs: [T:U], _ rhs: [T:U]) -> [T:U] {
@@ -161,7 +201,7 @@ func +<T,U>(_ lhs: [T:U], _ rhs: [T:U]) -> [T:U] {
 }
 
 
-
+parserLookup.forwardReference(to: jsonParser())
 // Test site
 
 jNumber() |> run("123")
@@ -169,7 +209,31 @@ jNumber() |> run("-123")
 jNumber() |> run("123.12")
 jNumber() |> run("-123.12")
 let bunchOfArr = "[ \"true\", \"true\", \"false\", \"null\", 123.0 ]"
+jNull() |> run(bunchOfArr)
+jBool() |> run(bunchOfArr)
+jNumber() |> run(bunchOfArr)
+jString() |> run(bunchOfArr)
+jArray() |> run(bunchOfArr)
+jObject() |> run(bunchOfArr)
 
 
-parserLookup.forwardReference(to: jsonParser())
-jsonParser() |> run(bunchOfArr) |> show
+
+
+let jsonObj = "{\n    \"glossary\": {\n        \"title\": \"example glossary\",\n\t\t\"GlossDiv\": {\n            \"title\": \"S\",\n\t\t\t\"GlossList\": {\n                \"GlossEntry\": {\n                    \"ID\": \"SGML\",\n\t\t\t\t\t\"SortAs\": \"SGML\",\n\t\t\t\t\t\"GlossTerm\": \"Standard Generalized Markup Language\",\n\t\t\t\t\t\"Acronym\": \"SGML\",\n\t\t\t\t\t\"Abbrev\": \"ISO 8879:1986\",\n\t\t\t\t\t\"GlossDef\": {\n                        \"para\": \"A meta-markup language, used to create markup languages such as DocBook.\",\n\t\t\t\t\t\t\"GlossSeeAlso\": [\"GML\", \"XML\"]\n                    },\n\t\t\t\t\t\"GlossSee\": \"markup\"\n                }\n            }\n        }\n    }\n}"
+
+let jsonOld = "{\n \"name\" : \"bj\" , \n \"age\": 12, \"obj\": { \"pet\": \"dog\", \"age\": [1,2] } }"
+let jsonA = "{\n \"obj\": { \"pet\": \"dog\" } }"
+let jsonObjArr = "{\n \"pets\":  [ \"true\" ] }"
+
+jsonParser() |> run(jsonOld) |> show
+
+//jsonParser() |> run(bunchOfArr) |> show
+//jArray() |> run("[ [ 12, 23], [12, 25] ]") |> show
+//jsonParser() |> run(jsonObjArr) |> show
+// let x = jsonParser() |> run(jsonObj)
+
+
+
+let veryBigJSON = "{\n\t\"created_at\": \"Thu Jun 22 21:00:00 +0000 2017\",\n\t\"id\": 877994604561387500,\n\t\"id_str\": \"877994604561387520\",\n\t\"text\": \"Creating a Grocery List Manager Using Angular, Part 1: Addamp; Display Items https://t.co/xFox78juL1 #Angular\",\n\t\"truncated\": false,\n\t\"entities\": {\n\t\t\"hashtags\": [{\n\t\t\t\"text\": \"Angular\",\n\t\t\t\"indices\": [103, 111]\n\t\t}],\n\t\t\"symbols\": [12],\n\t\t\"user_mentions\": [],\n\t\t\"urls\": [{\n\t\t\t\"url\": \"https://t.co/xFox78juL1\",\n\t\t\t\"expanded_url\": \"http://buff.ly/2sr60pf\",\n\t\t\t\"display_url\": \"buff.ly/2sr60pf\",\n\t\t\t\"indices\": [79, 102]\n\t\t}]\n\t},\n\t\"source\": \"<a href=\\\"http://bufferapp.com\\\" rel=\\\"nofollow\\\">Buffer</a>\",\n\t\"user\": {\n\t\t\"id\": 772682964,\n\t\t\"id_str\": \"772682964\",\n\t\t\"name\": \"SitePoint JavaScript\",\n\t\t\"screen_name\": \"SitePointJS\",\n\t\t\"location\": \"Melbourne, Australia\",\n\t\t\"description\": \"Keep up with JavaScript tutorials, tips, tricks and articles at SitePoint.\",\n\t\t\"url\": \"http://t.co/cCH13gqeUK\",\n\t\t\"entities\": {\n\t\t\t\"url\": {\n\t\t\t\t\"urls\": [{\n\t\t\t\t\t\"url\": \"http://t.co/cCH13gqeUK\",\n\t\t\t\t\t\"expanded_url\": \"http://sitepoint.com/javascript\",\n\t\t\t\t\t\"display_url\": \"sitepoint.com/javascript\",\n\t\t\t\t\t\"indices\": [0, 22]\n\t\t\t\t}]\n\t\t\t},\n\t\t\t\"description\": {\n\t\t\t\t\"urls\": []\n\t\t\t}\n\t\t},\n\t\t\"protected\": false,\n\t\t\"followers_count\": 2145,\n\t\t\"friends_count\": 18,\n\t\t\"listed_count\": 328,\n\t\t\"created_at\": \"Wed Aug 22 02:06:33 +0000 2012\",\n\t\t\"favourites_count\": 57,\n\t\t\"utc_offset\": 43200,\n\t\t\"time_zone\": \"Wellington\"\n\t}\n}"
+
+jsonParser() |> run(veryBigJSON) |> show

@@ -4,7 +4,7 @@ import Foundation
 // MARK:- primitive
 
 public let digits = "0123456789"
-public let whitespacces = ["\t", " ", "\n"].joined()
+public let whitespacces = ["\t", " ", "\n", "\r"].joined()
 public let plowercase = allAlphabets.lowercased() |> anyOfChars <?> "lowercase alphabets"
 public let puppercase = allAlphabets.uppercased() |> anyOfChars <?> "uppercase alphabets"
 public let pdigit = digits |> anyOfChars |>> {Int(String($0))!} <?> "Digits"
