@@ -217,23 +217,63 @@ jArray() |> run(bunchOfArr)
 jObject() |> run(bunchOfArr)
 
 
-
-
-let jsonObj = "{\n    \"glossary\": {\n        \"title\": \"example glossary\",\n\t\t\"GlossDiv\": {\n            \"title\": \"S\",\n\t\t\t\"GlossList\": {\n                \"GlossEntry\": {\n                    \"ID\": \"SGML\",\n\t\t\t\t\t\"SortAs\": \"SGML\",\n\t\t\t\t\t\"GlossTerm\": \"Standard Generalized Markup Language\",\n\t\t\t\t\t\"Acronym\": \"SGML\",\n\t\t\t\t\t\"Abbrev\": \"ISO 8879:1986\",\n\t\t\t\t\t\"GlossDef\": {\n                        \"para\": \"A meta-markup language, used to create markup languages such as DocBook.\",\n\t\t\t\t\t\t\"GlossSeeAlso\": [\"GML\", \"XML\"]\n                    },\n\t\t\t\t\t\"GlossSee\": \"markup\"\n                }\n            }\n        }\n    }\n}"
-
-let jsonOld = "{\n \"name\" : \"bj\" , \n \"age\": 12, \"obj\": { \"pet\": \"dog\", \"age\": [1,2] } }"
-let jsonA = "{\n \"obj\": { \"pet\": \"dog\" } }"
-let jsonObjArr = "{\n \"pets\":  [ \"true\" ] }"
-
-jsonParser() |> run(jsonOld) |> show
-
-//jsonParser() |> run(bunchOfArr) |> show
-//jArray() |> run("[ [ 12, 23], [12, 25] ]") |> show
-//jsonParser() |> run(jsonObjArr) |> show
-// let x = jsonParser() |> run(jsonObj)
-
-
-
 let veryBigJSON = "{\n\t\"created_at\": \"Thu Jun 22 21:00:00 +0000 2017\",\n\t\"id\": 877994604561387500,\n\t\"id_str\": \"877994604561387520\",\n\t\"text\": \"Creating a Grocery List Manager Using Angular, Part 1: Addamp; Display Items https://t.co/xFox78juL1 #Angular\",\n\t\"truncated\": false,\n\t\"entities\": {\n\t\t\"hashtags\": [{\n\t\t\t\"text\": \"Angular\",\n\t\t\t\"indices\": [103, 111]\n\t\t}],\n\t\t\"symbols\": [12],\n\t\t\"user_mentions\": [],\n\t\t\"urls\": [{\n\t\t\t\"url\": \"https://t.co/xFox78juL1\",\n\t\t\t\"expanded_url\": \"http://buff.ly/2sr60pf\",\n\t\t\t\"display_url\": \"buff.ly/2sr60pf\",\n\t\t\t\"indices\": [79, 102]\n\t\t}]\n\t},\n\t\"source\": \"<a href=\\\"http://bufferapp.com\\\" rel=\\\"nofollow\\\">Buffer</a>\",\n\t\"user\": {\n\t\t\"id\": 772682964,\n\t\t\"id_str\": \"772682964\",\n\t\t\"name\": \"SitePoint JavaScript\",\n\t\t\"screen_name\": \"SitePointJS\",\n\t\t\"location\": \"Melbourne, Australia\",\n\t\t\"description\": \"Keep up with JavaScript tutorials, tips, tricks and articles at SitePoint.\",\n\t\t\"url\": \"http://t.co/cCH13gqeUK\",\n\t\t\"entities\": {\n\t\t\t\"url\": {\n\t\t\t\t\"urls\": [{\n\t\t\t\t\t\"url\": \"http://t.co/cCH13gqeUK\",\n\t\t\t\t\t\"expanded_url\": \"http://sitepoint.com/javascript\",\n\t\t\t\t\t\"display_url\": \"sitepoint.com/javascript\",\n\t\t\t\t\t\"indices\": [0, 22]\n\t\t\t\t}]\n\t\t\t},\n\t\t\t\"description\": {\n\t\t\t\t\"urls\": []\n\t\t\t}\n\t\t},\n\t\t\"protected\": false,\n\t\t\"followers_count\": 2145,\n\t\t\"friends_count\": 18,\n\t\t\"listed_count\": 328,\n\t\t\"created_at\": \"Wed Aug 22 02:06:33 +0000 2012\",\n\t\t\"favourites_count\": 57,\n\t\t\"utc_offset\": 43200,\n\t\t\"time_zone\": \"Wellington\"\n\t}\n}"
 
-jsonParser() |> run(veryBigJSON) |> show
+let veryBigParsed = jsonParser() |> run(veryBigJSON)
+
+
+
+/// JSONValue to [String: JSONValue]
+
+extension JSONValue {
+    
+    func typedValue() -> Any? {
+        switch self {
+        case .null:
+            return nil
+        case let .bool(booleanV):
+            return booleanV
+        case let .string(str):
+            return str
+        case let .number(n):
+            return n
+        case let .array(arr):
+            let fm = arr.flatMap { $0.typedValue() }
+            let fmv = fm as Any
+            return fmv
+        case .object:
+            let dict = self.toDict()
+            return dict as Any
+        }
+    }
+    
+    func toDict() -> [String: Any]? {
+        guard case let .object(obj) = self else {
+            return nil
+        }
+        
+        var final = [String: Any]()
+        obj.map {
+            return ($0.key, $0.value.typedValue())
+        }.reduce(into: final) {
+            if let value = $1.1 {
+                final[$1.0] = value
+            }
+        }
+        return final
+    }
+    
+}
+
+
+let dict: [String: Any] = veryBigParsed.value()!.0.toDict() ?? [:]
+print((dict["entities"] as? [String: Any])?["hashtags"])
+
+
+
+
+
+
+
+
+
