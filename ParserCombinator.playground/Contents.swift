@@ -226,12 +226,9 @@ extension JSONValue {
         case let .number(n):
             return n
         case let .array(arr):
-            let fm = arr.flatMap { $0.typedValue() }
-            let fmv = fm as Any
-            return fmv
+            return arr.flatMap { $0.typedValue() }
         case .object:
-            let dict = self.toDict()
-            return dict as Any
+            return self.toDict()
         }
     }
     
@@ -251,12 +248,52 @@ extension JSONValue {
         return final
     }
     
+    subscript(keypath: String) -> Any? {
+        get {
+            let pathComponents = keypath.split(separator: ".").map(String.init)
+            return JSONValue.retrieveValue(from: self, withPaths: pathComponents)
+        }
+        set {
+            assertionFailure("Cannot set on JSONValue")
+        }
+    }
+    
+    private static func retrieveValue(from json: JSONValue, withPaths pathsInOrder: [String])  -> Any?{
+        guard let first = pathsInOrder.first else {
+            return json.typedValue()
+        }
+        let remainingPaths = Array(pathsInOrder.dropFirst())
+        
+        let firstAsArrayIndex: Int? = (pint |> run(first)).value()?.0
+        
+        switch (json, firstAsArrayIndex) {
+        // when keypath is a integer it means use this index item of array
+        case let (.array(items), int?):
+            guard int < items.count else { return nil }
+            return retrieveValue(from: items[int], withPaths: remainingPaths)
+        // when keypath is not an integer; its a object key value lookup
+        case let (.object(dict), nil):
+            guard let thisOne = dict["\(first)"] else {
+                return nil
+            }
+            return retrieveValue(from: thisOne, withPaths: remainingPaths)
+        default:
+            // Amy other types besides object can't contain dict values to subscript directly
+            return nil
+        }
+    }
+    
 }
 
 
-let dict: [String: Any] = inputJSONparser.value()!.0.toDict() ?? [:]
+let jsonValue = inputJSONparser.value()!.0
+let createdAt = jsonValue["created_at"]
+print(createdAt)
 
-(dict["entities"] as? [String: Any])?["hashtags"]
+let entitiesUrlURLs = jsonValue["user.entities.url.urls.0.url"]
+print(entitiesUrlURLs)
+
+
 
 
 
