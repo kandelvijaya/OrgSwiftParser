@@ -286,20 +286,129 @@ extension JSONValue {
 }
 
 
-let jsonValue = inputJSONparser.value()!.0
-let createdAt = jsonValue["created_at"]
-print(createdAt)
-
-let entitiesUrlURLs = jsonValue["user.entities.url.urls.0.url"]
-print(entitiesUrlURLs)
-
-
+//let jsonValue = inputJSONparser.value()!.0
+//let createdAt = jsonValue["created_at"]
+//print(createdAt)
+//
+//let entitiesUrlURLs = jsonValue["user.entities.url.urls.0.url"]
+//print(entitiesUrlURLs)
 
 
 
 
+private func retrieveValue(from json: JSONValue, withPaths pathsInOrder: [String])  -> Any?{
+    guard let first = pathsInOrder.first else {
+        return json.typedValue()
+    }
+    let remainingPaths = Array(pathsInOrder.dropFirst())
+    
+    let firstAsArrayIndex: Int? = (pint |> run(first)).value()?.0
+    
+    switch (json, firstAsArrayIndex) {
+    // when keypath is a integer it means use this index item of array
+    case let (.array(items), int?):
+        guard int < items.count else { return nil }
+        return retrieveValue(from: items[int], withPaths: remainingPaths)
+    // when keypath is not an integer; its a object key value lookup
+    case let (.object(dict), nil):
+        guard let thisOne = dict["\(first)"] else {
+            return nil
+        }
+        return retrieveValue(from: thisOne, withPaths: remainingPaths)
+    default:
+        // Amy other types besides object can't contain dict values to subscript directly
+        return nil
+    }
+}
+
+struct OutlineHeading {
+    let title: String
+    let depth: Int
+}
+
+struct Outline {
+    let heading: OutlineHeading
+    let content: [String]
+    // let headingDepth: Int
+    //let subOutlines: [OrgTree]
+}
+
+/*
+ This could also be represented as
+ enum Outline {
+    case tree(heading: String, content: [String], subTrees: [Outline])
+ }
+ */
+
+let pstars = pchar("*") |> many1
+let anyCharacterBesidesNewLine = satisfy({ $0 != Character("\n") }, label: "Except New Line")
+let newLine = pchar("\n") |> many1
+
+var headingParser: Parser<OutlineHeading> {
+    let p = (pstars ->> (pchar(" ") |> many1)) ->>- (anyCharacterBesidesNewLine |> many1) ->> newLine
+    let pH = p |>> { OutlineHeading(title: String($1), depth: $0.count) }
+    return pH
+}
+
+/// Run the parser Parser<U> unless the next stream is satisfied with Parser<T>
+func parseUntil<T,U>(_ next: Parser<T>) -> (Parser<U>) -> Parser<[U]> {
+    return { useParser in
+        return Parser<[U]> { input in
+            
+            var fedInput = input
+            var accumulatorResult = [U]()
+            while let _ = (next |> run(fedInput)).error() {
+                if let thisValue = (useParser |> run(fedInput)).value() {
+                    accumulatorResult.append(thisValue.0)
+                    fedInput = thisValue.1
+                } else {
+                    // neither thisParser Matched nor the next
+                    return [useParser] |> sequenceOutput |> run(fedInput)
+                }
+            }
+            
+            let out = (accumulatorResult, fedInput)
+            return .success(out)
+        }
+    }
+}
+
+
+// pstring("hello") |> parseUntil(pchar("!")) ->>- pstring("! there") |> run("hellohello! there")
+
+var contentParser: Parser<[String]> {
+    let p = (anyCharacterBesidesNewLine |> many1) ->> newLine |>> {String($0)}
+    let manyLines = p |> parseUntil(headingParser)
+    return manyLines
+}
+
+
+
+let str =   """
+            * This is H1
+            This is the content line 1
+            This is content line 2
+            * B This is another heading H1 without content
+            ** This is B's subheading
+            - list item 1
+            - list item 2
+            """
+
+let strC =   """
+            This is the content line 1
+            This is content line 2
+            * B This is another heading H1 without content
+            """
+let strWithoutContent =  """
+            * This is the content line 1
+            This is content line 2
+            * B This is another heading H1 without content
+            """
 
 
 
 
-
+// headingParser |> run("* this is h1\n")
+headingParser |> run(str)
+contentParser |> run(strC)
+contentParser |> run(strWithoutContent)
