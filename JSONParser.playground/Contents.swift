@@ -12,8 +12,35 @@ let inputJSONString = "{\n\t\"created_at\": \"Thu Jun 22 21:00:00 +0000 2017\",\
 
 import JSONParser
 
-let parsed = pjson() |> run(inputJSONString)
-parsed.value()!.0["created_at"] |> consoleOut
+func jsonFile() -> String {
+    guard let url = Bundle.main.url(forResource: "exampleBig", withExtension: "json") else {
+        return ""
+    }
+    return try! String(contentsOf: url)
+}
+
+
+func timeBlockWithMach(_ block: () -> Void) -> TimeInterval {
+    var info = mach_timebase_info()
+    guard mach_timebase_info(&info) == KERN_SUCCESS else { return -1 }
+    
+    let start = mach_absolute_time()
+    //Block execution to time!
+    block()
+    let end = mach_absolute_time()
+    
+    let elapsed = end - start
+    
+    let nanos = elapsed * UInt64(info.numer) / UInt64(info.denom)
+    return TimeInterval(nanos) / TimeInterval(NSEC_PER_SEC)
+}
+
+timeBlockWithMach {
+    let parsed = pjson() |> run(jsonFile())
+    parsed.value()!.0["arr.10"] |> consoleOut
+}
+
+// 1. JSON file with 4324 lines took 25.53 Seconds
 
 
 
