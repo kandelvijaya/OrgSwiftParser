@@ -13,7 +13,7 @@ import ParserCombinator
 
 extension JSONValue {
     
-    func typedValue() -> Any? {
+    public func typedValue() -> Any? {
         switch self {
         case .null:
             return nil
@@ -30,7 +30,7 @@ extension JSONValue {
         }
     }
     
-    func toDict() -> [String: Any]? {
+    public func toDict() -> [String: Any]? {
         guard case let .object(obj) = self else {
             return nil
         }
@@ -38,15 +38,15 @@ extension JSONValue {
         var final = [String: Any]()
         obj.map {
             return ($0.key, $0.value.typedValue())
-            }.reduce(into: final) {
-                if let value = $1.1 {
-                    final[$1.0] = value
-                }
+        }.reduce(into: final) {
+            if let value = $1.1 {
+                final[$1.0] = value
+            }
         }
         return final
     }
     
-    subscript(keypath: String) -> Any? {
+    public subscript(keypath: String) -> Any? {
         get {
             let pathComponents = keypath.split(separator: ".").map(String.init)
             return JSONValue.retrieveValue(from: self, withPaths: pathComponents)
@@ -82,7 +82,6 @@ extension JSONValue {
     }
     
 }
-
 
 
 private func retrieveValue(from json: JSONValue, withPaths pathsInOrder: [String])  -> Any?{

@@ -110,27 +110,6 @@ func jString() -> Parser<JSONValue> {
     return jStringQuoted
 }
 
-final class MutualRecursionForwardReference<T> {
-    var recursion_lookup_table: [String: T] = [:]
-    private let key = "Key"
-    
-    /// Initialize with initial reference
-    init(with initialReference: T) {
-        recursion_lookup_table[key] = initialReference
-    }
-    
-    /// When the mutual recursive defination expression is done
-    /// assign the eventual value to be used.
-    func forwardReference(to eventualReference: T) {
-        recursion_lookup_table[key] = eventualReference
-    }
-    
-    /// retrieve reference
-    func currentValue() -> T {
-        return recursion_lookup_table[key]!
-    }
-}
-
 var parserLookup = MutualRecursionForwardReference<Parser<JSONValue>>(with: jNull())
 
 // MARK:- The entire json parser

@@ -12,7 +12,8 @@ let inputJSONString = "{\n\t\"created_at\": \"Thu Jun 22 21:00:00 +0000 2017\",\
 
 import JSONParser
 
-pjson() |> run(inputJSONString) |> consoleOut
+let parsed = pjson() |> run(inputJSONString)
+parsed.value()!.0["created_at"] |> consoleOut
 
 
 

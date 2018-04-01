@@ -13,6 +13,7 @@
 		85E8C20F20715E62009B48E2 /* ParserCombinator.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 85E8C20E20715E62009B48E2 /* ParserCombinator.framework */; };
 		85E8C21220715EBF009B48E2 /* JSONParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85E8C21120715EBF009B48E2 /* JSONParser.swift */; };
 		85E8C21420715F06009B48E2 /* JSONParserExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85E8C21320715F06009B48E2 /* JSONParserExtension.swift */; };
+		85F4E781207166EB00547244 /* MutualRecursionForwardReference.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85F4E780207166EB00547244 /* MutualRecursionForwardReference.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -47,6 +48,7 @@
 		85E8C20E20715E62009B48E2 /* ParserCombinator.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = ParserCombinator.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		85E8C21120715EBF009B48E2 /* JSONParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONParser.swift; sourceTree = "<group>"; };
 		85E8C21320715F06009B48E2 /* JSONParserExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONParserExtension.swift; sourceTree = "<group>"; };
+		85F4E780207166EB00547244 /* MutualRecursionForwardReference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MutualRecursionForwardReference.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -95,6 +97,7 @@
 				85E8C1F720715E06009B48E2 /* Info.plist */,
 				85E8C21120715EBF009B48E2 /* JSONParser.swift */,
 				85E8C21320715F06009B48E2 /* JSONParserExtension.swift */,
+				85F4E780207166EB00547244 /* MutualRecursionForwardReference.swift */,
 			);
 			path = JSONParser;
 			sourceTree = "<group>";
@@ -227,6 +230,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				85E8C21420715F06009B48E2 /* JSONParserExtension.swift in Sources */,
+				85F4E781207166EB00547244 /* MutualRecursionForwardReference.swift in Sources */,
 				85E8C21220715EBF009B48E2 /* JSONParser.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
