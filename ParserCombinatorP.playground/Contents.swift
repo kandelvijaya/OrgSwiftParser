@@ -404,10 +404,35 @@ func contentParser() -> Parser<[String]> {
     return manyLines <?> "Org Content"
 }
 
+func outlineParser() -> Parser<Outline> {
+    return headingParser() ->>- contentParser() |>> { Outline(heading: $0, content: $1) }
+}
 
-let realEmacsOrg =
-"""
-"""
+func outlineParser(for level: Int) -> Parser<Outline> {
+    return headingParser(depth: level) ->>- contentParser() |>> { Outline(heading: $0, content: $1) }
+}
+
+func orgParser(start startLevel: Int = 1) -> Parser<Outline> {
+    typealias Output = Result<(Outline, Parser<Outline>.RemainingStream)>
+    return Parser<Outline> { input in
+        let thisLevel = outlineParser(for: startLevel) |> run(input)
+        let mapped: Output = thisLevel.flatMap { v in
+            let nextLevel = startLevel + 1
+            let nextRun = orgParser(start: nextLevel) |> many |> run(v.1)
+            
+            let inner: Output = nextRun.map { subV in
+                let output = Outline(heading: v.0.heading, content: v.0.content, subItems: subV.0)
+                return (output, subV.1)
+            }
+            return inner
+        }
+        return mapped
+    }
+}
+
+
+
+
 
 let str =   """
             * 2018/04/01 Task
@@ -446,75 +471,27 @@ let strWithoutContent =  """
             * B This is another heading H1 without content
             """
 
-func outlineParser() -> Parser<Outline> {
-    let parser = headingParser() ->>- contentParser() |>> { Outline(heading: $0, content: $1) }
-    return parser
-}
-
-func outlineParser(for level: Int) -> Parser<Outline> {
-    return headingParser(depth: level)
-        ->>- contentParser()
-        |>> { Outline(heading: $0, content: $1) }
-}
-
-func orgOutlineParser() -> Parser<OrgFile> {
-    return outlineParser() |>> { OrgFile.outline($0) }
-}
 
 
-func orgParser(start from: Int = 1) -> Parser<Outline> {
-    typealias Output = Result<(Outline, Parser<Outline>.RemainingStream)>
-    return Parser<Outline> { input in
-        let thisLevel = outlineParser(for: from) |> run(input)
-        let mapped: Output = thisLevel.flatMap { v in
-            let nextRun = orgParser(start: from + 1) |> many |> run(v.1)
-            
-            let inner: Output = nextRun.map { subV in
-                let output = Outline(heading: v.0.heading, content: v.0.content, subItems: subV.0)
-                return (output, subV.1)
-            }
-            return inner
-        }
-        return mapped
-    }
-}
-
-
-
-
-
-
-
-
-let orgParsed = orgParser() |> many |> run(realEmacsOrg)
-orgParsed |> log
-let firstItem = orgParsed.value()!.0[0]
-let secondItem = orgParsed.value()!.0[1]
-
-firstItem.heading.title
-secondItem.heading.title
-secondItem.subItems.count
-firstItem.subItems.count
-
-
-
-
-
-
-
-func log(_ a: Any) {
+func consoleOut(_ a: Any) {
     print(a)
 }
 
-struct OrgTreeModel {
-    let heading: OutlineHeading
-    let content: [String]
-    let subItems: [OrgTreeModel]
+
+
+
+func eventFileContent() -> String {
+    guard let url = Bundle.main.url(forResource: "dailyEvents", withExtension: "org") else {
+        return ""
+    }
+    return try! String(contentsOf: url)
 }
 
-struct OrgFileModel {
-    let outlines: [OrgTreeModel]
-}
 
+let orgParsed = orgParser() |> many |> run(eventFileContent())
+orgParsed |> consoleOut
+
+orgParsed.value()?.0[0].heading.title
+orgParsed.value()?.0[1].subItems.count
 
 
