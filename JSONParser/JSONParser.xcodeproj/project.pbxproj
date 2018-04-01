@@ -10,6 +10,9 @@
 		85E8C1FD20715E06009B48E2 /* JSONParser.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 85E8C1F320715E06009B48E2 /* JSONParser.framework */; };
 		85E8C20220715E06009B48E2 /* JSONParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85E8C20120715E06009B48E2 /* JSONParserTests.swift */; };
 		85E8C20420715E06009B48E2 /* JSONParser.h in Headers */ = {isa = PBXBuildFile; fileRef = 85E8C1F620715E06009B48E2 /* JSONParser.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		85E8C20F20715E62009B48E2 /* ParserCombinator.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 85E8C20E20715E62009B48E2 /* ParserCombinator.framework */; };
+		85E8C21220715EBF009B48E2 /* JSONParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85E8C21120715EBF009B48E2 /* JSONParser.swift */; };
+		85E8C21420715F06009B48E2 /* JSONParserExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85E8C21320715F06009B48E2 /* JSONParserExtension.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -22,6 +25,18 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		85E8C21020715E73009B48E2 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		85E8C1F320715E06009B48E2 /* JSONParser.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = JSONParser.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		85E8C1F620715E06009B48E2 /* JSONParser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JSONParser.h; sourceTree = "<group>"; };
@@ -29,6 +44,9 @@
 		85E8C1FC20715E06009B48E2 /* JSONParserTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = JSONParserTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		85E8C20120715E06009B48E2 /* JSONParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONParserTests.swift; sourceTree = "<group>"; };
 		85E8C20320715E06009B48E2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		85E8C20E20715E62009B48E2 /* ParserCombinator.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = ParserCombinator.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		85E8C21120715EBF009B48E2 /* JSONParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONParser.swift; sourceTree = "<group>"; };
+		85E8C21320715F06009B48E2 /* JSONParserExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONParserExtension.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -36,6 +54,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				85E8C20F20715E62009B48E2 /* ParserCombinator.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -56,6 +75,7 @@
 				85E8C1F520715E06009B48E2 /* JSONParser */,
 				85E8C20020715E06009B48E2 /* JSONParserTests */,
 				85E8C1F420715E06009B48E2 /* Products */,
+				85E8C20D20715E62009B48E2 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -73,6 +93,8 @@
 			children = (
 				85E8C1F620715E06009B48E2 /* JSONParser.h */,
 				85E8C1F720715E06009B48E2 /* Info.plist */,
+				85E8C21120715EBF009B48E2 /* JSONParser.swift */,
+				85E8C21320715F06009B48E2 /* JSONParserExtension.swift */,
 			);
 			path = JSONParser;
 			sourceTree = "<group>";
@@ -84,6 +106,14 @@
 				85E8C20320715E06009B48E2 /* Info.plist */,
 			);
 			path = JSONParserTests;
+			sourceTree = "<group>";
+		};
+		85E8C20D20715E62009B48E2 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				85E8C20E20715E62009B48E2 /* ParserCombinator.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -108,6 +138,7 @@
 				85E8C1EF20715E06009B48E2 /* Frameworks */,
 				85E8C1F020715E06009B48E2 /* Headers */,
 				85E8C1F120715E06009B48E2 /* Resources */,
+				85E8C21020715E73009B48E2 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -148,6 +179,7 @@
 				TargetAttributes = {
 					85E8C1F220715E06009B48E2 = {
 						CreatedOnToolsVersion = 9.3;
+						LastSwiftMigration = 0930;
 					};
 					85E8C1FB20715E06009B48E2 = {
 						CreatedOnToolsVersion = 9.3;
@@ -194,6 +226,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				85E8C21420715F06009B48E2 /* JSONParserExtension.swift in Sources */,
+				85E8C21220715EBF009B48E2 /* JSONParser.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -339,6 +373,7 @@
 		85E8C20820715E06009B48E2 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
@@ -355,6 +390,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.kandelvijaya.JSONParser;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -363,6 +399,7 @@
 		85E8C20920715E06009B48E2 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
@@ -387,6 +424,7 @@
 		85E8C20B20715E06009B48E2 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = JSONParserTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -404,6 +442,7 @@
 		85E8C20C20715E06009B48E2 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = JSONParserTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
