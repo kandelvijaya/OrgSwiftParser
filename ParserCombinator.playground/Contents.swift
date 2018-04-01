@@ -226,7 +226,7 @@ extension JSONValue {
         case let .number(n):
             return n
         case let .array(arr):
-            return arr.flatMap { $0.typedValue() }
+            return arr.compactMap { $0.typedValue() }
         case .object:
             return self.toDict()
         }
@@ -326,12 +326,29 @@ struct OutlineHeading {
     let depth: Int
 }
 
+enum OrgFileLine {
+    case line(String)
+    case heading(OutlineHeading)
+}
+
 struct Outline {
     let heading: OutlineHeading
     let content: [String]
-    // let headingDepth: Int
-    //let subOutlines: [OrgTree]
+    let subItems: [Outline]
+    
+    init(heading: OutlineHeading, content: [String], subItems: [Outline] = []) {
+        self.heading = heading
+        self.content = content
+        self.subItems = subItems
+    }
 }
+
+
+enum OrgFile {
+    case outline(Outline)
+    case tree([OrgFile])
+}
+
 
 /*
  This could also be represented as
@@ -344,10 +361,17 @@ let pstars = pchar("*") |> many1
 let anyCharacterBesidesNewLine = satisfy({ $0 != Character("\n") }, label: "Except New Line")
 let newLine = pchar("\n") |> many1
 
-var headingParser: Parser<OutlineHeading> {
+func headingParser() -> Parser<OutlineHeading> {
     let p = (pstars ->> (pchar(" ") |> many1)) ->>- (anyCharacterBesidesNewLine |> many1) ->> newLine
     let pH = p |>> { OutlineHeading(title: String($1), depth: $0.count) }
-    return pH
+    return pH <?> "Org Heading"
+}
+
+func headingParser(depth: Int) -> Parser<OutlineHeading> {
+    let depthStars = Array<Parser<Character>>(repeating: pchar("*"), count: depth) |> sequenceOutput
+    let p = (depthStars ->> (pchar(" ") |> many1)) ->>- (anyCharacterBesidesNewLine |> many1) ->> newLine
+    let pH = p |>> { OutlineHeading(title: String($1), depth: $0.count) }
+    return pH <?> "Org Heading"
 }
 
 /// Run the parser Parser<U> unless the next stream is satisfied with Parser<T>
@@ -357,7 +381,7 @@ func parseUntil<T,U>(_ next: Parser<T>) -> (Parser<U>) -> Parser<[U]> {
             
             var fedInput = input
             var accumulatorResult = [U]()
-            while let _ = (next |> run(fedInput)).error() {
+            while fedInput.currentLine != InputState.EOF, let _ = (next |> run(fedInput)).error() {
                 if let thisValue = (useParser |> run(fedInput)).value() {
                     accumulatorResult.append(thisValue.0)
                     fedInput = thisValue.1
@@ -374,26 +398,43 @@ func parseUntil<T,U>(_ next: Parser<T>) -> (Parser<U>) -> Parser<[U]> {
 }
 
 
-// pstring("hello") |> parseUntil(pchar("!")) ->>- pstring("! there") |> run("hellohello! there")
-
-var contentParser: Parser<[String]> {
-    let p = (anyCharacterBesidesNewLine |> many1) ->> newLine |>> {String($0)}
-    let manyLines = p |> parseUntil(headingParser)
-    return manyLines
+func contentParser() -> Parser<[String]> {
+    let anyContent = (anyCharacterBesidesNewLine |> many1) ->> newLine |>> {String($0)}
+    let manyLines = anyContent |> parseUntil(headingParser())
+    return manyLines <?> "Org Content"
 }
 
 
+let realEmacsOrg =
+"""
+"""
 
 let str =   """
-            * This is H1
-            This is the content line 1
-            This is content line 2
+            * 2018/04/01 Task
+            ** Q1:
+            *** TODO: Work on Org Parser
+            - list item 1
+            - list item 2
+            *** This is H1 -> H2 -> H3
+            - list item H3
+            - list item H3 2
+            ** This is H1 -> H2Second
+            - list item 1 H2 second
+            - list item 2 H2 second
+            ** This is H1 -> H2 Three
+            - list item 1 H2 3
+            - list item 2 H2 3
+            *** This is H1 -> H2 4 -> H3
+            - list item 1
+            - list item 2
+            """
+
+let strWithSub =   """
             * B This is another heading H1 without content
             ** This is B's subheading
             - list item 1
             - list item 2
             """
-
 let strC =   """
             This is the content line 1
             This is content line 2
@@ -405,10 +446,75 @@ let strWithoutContent =  """
             * B This is another heading H1 without content
             """
 
+func outlineParser() -> Parser<Outline> {
+    let parser = headingParser() ->>- contentParser() |>> { Outline(heading: $0, content: $1) }
+    return parser
+}
+
+func outlineParser(for level: Int) -> Parser<Outline> {
+    return headingParser(depth: level)
+        ->>- contentParser()
+        |>> { Outline(heading: $0, content: $1) }
+}
+
+func orgOutlineParser() -> Parser<OrgFile> {
+    return outlineParser() |>> { OrgFile.outline($0) }
+}
+
+
+func orgParser(start from: Int = 1) -> Parser<Outline> {
+    typealias Output = Result<(Outline, Parser<Outline>.RemainingStream)>
+    return Parser<Outline> { input in
+        let thisLevel = outlineParser(for: from) |> run(input)
+        let mapped: Output = thisLevel.flatMap { v in
+            let nextRun = orgParser(start: from + 1) |> many |> run(v.1)
+            
+            let inner: Output = nextRun.map { subV in
+                let output = Outline(heading: v.0.heading, content: v.0.content, subItems: subV.0)
+                return (output, subV.1)
+            }
+            return inner
+        }
+        return mapped
+    }
+}
 
 
 
-// headingParser |> run("* this is h1\n")
-headingParser |> run(str)
-contentParser |> run(strC)
-contentParser |> run(strWithoutContent)
+
+
+
+
+
+let orgParsed = orgParser() |> many |> run(realEmacsOrg)
+orgParsed |> log
+let firstItem = orgParsed.value()!.0[0]
+let secondItem = orgParsed.value()!.0[1]
+
+firstItem.heading.title
+secondItem.heading.title
+secondItem.subItems.count
+firstItem.subItems.count
+
+
+
+
+
+
+
+func log(_ a: Any) {
+    print(a)
+}
+
+struct OrgTreeModel {
+    let heading: OutlineHeading
+    let content: [String]
+    let subItems: [OrgTreeModel]
+}
+
+struct OrgFileModel {
+    let outlines: [OrgTreeModel]
+}
+
+
+

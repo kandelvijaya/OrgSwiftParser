@@ -48,6 +48,10 @@ public struct InputState {
 
 extension InputState {
     
+    public static var EOF: String {
+        return "end of file"
+    }
+    
     public init(from str: String) {
         let l = str.split(separator: Character("\n")).map(String.init)
         lines = l
@@ -56,7 +60,7 @@ extension InputState {
     
     public var currentLine: String {
         guard position.row < lines.count else {
-            return "end of file"
+            return InputState.EOF
         }
         return lines[position.row]
     }
