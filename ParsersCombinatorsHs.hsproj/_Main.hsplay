@@ -1,0 +1,43 @@
+-- Haskell Playground 1.0
+
+
+let ap = pchar 'a'
+let pp = pchar 'p'
+
+
+run ap "apple"
+
+let res12 = Success 12
+fmap (*12) res12
+
+let mapped = fmap (\x -> [x] ++ "that") ap
+run mapped "apple"
+
+
+let x = Success 12 
+let f = \x -> Success (x * 2)
+x >>= f
+
+--run (ap ->> pp) "apple"
+
+
+:t bind
+
+ap >>= \l -> pp >>= \r -> return l
+
+
+let applChar = fmap (pchar) "appl"
+let sequenced = sequenceOut applChar
+run sequenced "apple"
+
+
+run (many $ pchar 'a') "aapple"
+
+run (many1 $ pchar 'a') "bpple"
+
+
+run pdigit "123"
+
+
+run pint "123something "
+
