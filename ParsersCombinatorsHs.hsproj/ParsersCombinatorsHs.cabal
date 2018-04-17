@@ -12,3 +12,7 @@ Executable ParsersCombinatorsHs
   build-depends:
       base -any
   default-language: Haskell2010
+  other-modules:
+      Parser
+      Result
+      Combinators

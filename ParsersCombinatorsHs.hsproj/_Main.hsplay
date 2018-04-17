@@ -1,5 +1,5 @@
 -- Haskell Playground 1.0
-
+import Result 
 
 let ap = pchar 'a'
 let pp = pchar 'p'
@@ -21,7 +21,7 @@ x >>= f
 --run (ap ->> pp) "apple"
 
 
-:t bind
+
 
 ap >>= \l -> pp >>= \r -> return l
 
@@ -41,3 +41,5 @@ run pdigit "123"
 
 run pint "123something "
 
+
+run pfloat "-12.46somet"
