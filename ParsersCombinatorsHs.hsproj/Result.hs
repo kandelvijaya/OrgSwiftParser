@@ -23,3 +23,14 @@ instance Applicative Result where
         Success vf -> case b of 
             Failure e2 -> Failure e2
             Success v2 -> Success $ vf v2
+
+
+-- equality 
+instance (Eq a) => Eq (Result a) where 
+    res1 == res2 = case res1 of 
+        Failure e1 -> case res2 of 
+            Failure e2 -> e1 == e2
+            _ -> False 
+        Success v1 -> case res2 of 
+            Success v2 -> v1 == v2
+            _ -> False 

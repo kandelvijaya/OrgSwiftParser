@@ -7,6 +7,7 @@ let jsonNumber = JNumber 123.24
 
 
 
+quoted a = "\"" ++ a ++ "\""
 
 
 let jsonObject = JObject 
@@ -18,14 +19,49 @@ let x = Map.fromList list
 let y = JObject x
 
 
-run jnull "\"null\" that "
+run jnull "null that "
 
 
-run jbool "\"true\""
-run jbool "\"false\""
-run jbool "true"
-run jbool "\"TRUE\""
+run jbool $ quoted "true"
+run jbool $ quoted "false"
+run jbool $ quoted "FALSE"
+run jbool $ quoted "TRUE"
 
 
 
-run jstring "\"}\""
+run jstring $ quoted ""
+-- need to consider the full scenario here
+run jstring $ quoted "merry had a little dog \" yes \""
+run jstring $ quoted "-123.23 there "
+
+
+run jnumber "\"123\""
+run jnumber "\"-123\""
+run jnumber "\"-123.75\""
+
+
+-- jarray 
+let array = "[\"1.1\", \"1.3\"]"
+run jarray array
+
+-- haskell gets away with mutual recursion completely. Awesome 
+
+let emptyArr = "[]"
+run jarray emptyArr
+
+let heteroArr = "[\"12.3\", \"Bj\", \"null\"]"
+
+run jarray heteroArr
+
+
+--jobject
+let emptyObj = "{}"
+run jobject emptyObj
+
+let singletonObj = "{ \"age\" : \"26\" }"
+
+run jobject singletonObj
+
+
+let multiObj = "{ \"age\" : \"26\", \"name\" : \"Bj\" }"
+run jobject multiObj
