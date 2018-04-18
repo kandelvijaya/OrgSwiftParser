@@ -1,0 +1,31 @@
+-- Haskell Playground 1.0
+import qualified Data.Map as Mp
+
+let jsonNull = JNull
+let jsonString = JString "hello"
+let jsonNumber = JNumber 123.24
+
+
+
+
+
+let jsonObject = JObject 
+
+
+let list = [("age", jsonString), ("name", jsonNull)]
+
+let x = Map.fromList list 
+let y = JObject x
+
+
+run jnull "\"null\" that "
+
+
+run jbool "\"true\""
+run jbool "\"false\""
+run jbool "true"
+run jbool "\"TRUE\""
+
+
+
+run jstring "\"}\""

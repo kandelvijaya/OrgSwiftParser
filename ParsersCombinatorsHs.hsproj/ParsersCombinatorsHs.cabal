@@ -10,9 +10,12 @@ Executable ParsersCombinatorsHs
   main-is: Main.hs
   buildable: True
   build-depends:
-      base -any
+      base -any,
+      containers -any
   default-language: Haskell2010
   other-modules:
+      StandardLib
       Parser
       Result
       Combinators
+      JSONParser
