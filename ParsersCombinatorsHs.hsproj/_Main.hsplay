@@ -30,16 +30,11 @@ let applChar = fmap (pchar) "appl"
 let sequenced = sequenceOut applChar
 run sequenced "apple"
 
-
 run (many $ pchar 'a') "aapple"
 
 run (many1 $ pchar 'a') "bpple"
 
 
-run pdigit "123"
 
+main
 
-run pint "123something "
-
-
-run pfloat "-12.46somet"

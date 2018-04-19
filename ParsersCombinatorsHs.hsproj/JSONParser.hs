@@ -11,6 +11,7 @@ module JSONParser (jnull,
                              JArray,
                              JBool
                              ),
+                   jsonParser,
                    ) where 
     
 import Parser
@@ -55,8 +56,8 @@ jnull = let match = pstring "null" in
         
 --jbool
 jbool :: Parser JSONValue
-jbool = let ptrue = (\_ -> True) <$> jq >>- pstring "true" ->> jq in
-    let pfalse = (\_ -> False) <$> jq >>- pstring "false" ->> jq in
+jbool = let ptrue = (\_ -> True) <$> pstring "true" in
+    let pfalse = (\_ -> False) <$> pstring "false" in
     (\b -> JBool b) <$> ptrue <|> pfalse
         
 
@@ -71,6 +72,7 @@ escapedChars = [("\\\"", '\"'),
                 ("\\\\", '\\'),
                 ("\\/", '/'),
                 ("\\n", '\n'),
+                ("\\r", '\n'),
                 ("\\t", '\t')]
                 
 jEscapedChar :: Parser Char
@@ -91,7 +93,7 @@ jstring = let strMatch = many $ choice [jEscapedChar, jUnescapedChars] in
 
 --jnumber 
 jnumber :: Parser JSONValue 
-jnumber = (\x -> JNumber x) <$> jq >>- (pfloat <|> pfint) ->> jq where 
+jnumber = (\x -> JNumber x) <$> (pfloat <|> pfint) where 
     pfint = fmap (fromIntegral) pint
 
 
@@ -131,4 +133,4 @@ jobject = (\(kvs, kvmaybe) -> case kvmaybe of
 
 --jsonP
 jsonParser :: Parser JSONValue 
-jsonParser = choice [jnull, jbool, jnumber, jstring, jarray]
+jsonParser = choice [jnull, jbool, jnumber, jstring, jarray, jobject]
