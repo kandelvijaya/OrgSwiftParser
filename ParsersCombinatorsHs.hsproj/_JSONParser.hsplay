@@ -35,6 +35,17 @@ run jstring $ quoted "merry had a little dog \" yes \""
 run jstring $ quoted "-123.23 there "
 
 
+run jEscapedChar "\\n"
+run (many jUnescapedChars) "aball"
+run jstring $ quoted "-123.23 there "
+
+let strMatch = many $ choice [jEscapedChar, jUnescapedChars]
+
+run strMatch "apple \\\" is a good fruit \\\""
+
+run jstring "\"hello\""
+
+
 run jnumber "\"123\""
 run jnumber "\"-123\""
 run jnumber "\"-123.75\""

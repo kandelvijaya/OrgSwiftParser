@@ -62,13 +62,32 @@ jbool = let ptrue = (\_ -> True) <$> jq >>- pstring "true" ->> jq in
 
 specialChars = ['{', '}', '[', ']', '\"']
 
+
+
+
 --jstring 
 -- actual implementation of using proper unicode and escaping are left at this moment
+escapedChars = [("\\\"", '\"'),
+                ("\\\\", '\\'),
+                ("\\/", '/'),
+                ("\\n", '\n'),
+                ("\\t", '\t')]
+                
+jEscapedChar :: Parser Char
+jEscapedChar = choice $ (\(s,c) -> fmap (\_ -> c) (pstring s)) <$> escapedChars
+
+
+jUnescapedChars :: Parser Char 
+jUnescapedChars = satisfy (\c -> c /= '\\' && c /= '\"')
+
+
 jstring :: Parser JSONValue
-jstring = let notSC = satisfy (\c -> not (elem c specialChars)) in 
-    let jmatch = many notSC in
-    let match = jq >>- jmatch ->> jq in
+jstring = let strMatch = many $ choice [jEscapedChar, jUnescapedChars] in
+    let match = (jq >>- strMatch) ->> jq in 
         (\x -> JString x) <$> match
+
+
+
 
 --jnumber 
 jnumber :: Parser JSONValue 

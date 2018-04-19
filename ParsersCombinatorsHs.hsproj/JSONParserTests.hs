@@ -37,3 +37,11 @@ wontParseCapsTrue = TestCase (assertEqual
                         (run jbool "\"TRUE\"")
                         (Failure "fix this")
                         )
+                        
+
+tests = TestList [TestLabel "can parse null" canParseNull,
+                    TestLabel "can parse true" canParseTrue,
+                    TestLabel "can parse false" canParseFalse,
+                    TestLabel "wont parse raw false" wontParseRawFalse,
+                    TestLabel "wont parse caps true" wontParseCapsTrue
+                    ]
